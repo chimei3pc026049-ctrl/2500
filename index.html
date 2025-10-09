@@ -179,6 +179,24 @@
                          <h2 class="text-xl font-bold text-gray-800">數據統計分析</h2>
                          <button id="export-excel-btn" class="py-2 px-4 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">匯出 Excel</button>
                      </div>
+
+                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <label for="stats-month-filter" class="text-sm font-medium text-gray-700">篩選月份:</label>
+                            <input type="month" id="stats-month-filter" class="border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+                        <div class="flex gap-4 text-center">
+                            <div class="p-2">
+                                <p class="text-2xl font-bold text-blue-600" id="stats-total-requests">0</p>
+                                <p class="text-sm font-medium text-gray-500">總申請筆數</p>
+                            </div>
+                            <div class="p-2">
+                                <p class="text-2xl font-bold text-green-600" id="stats-driver-trips">0</p>
+                                <p class="text-sm font-medium text-gray-500">司機總趟數</p>
+                            </div>
+                        </div>
+                    </div>
+
                      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                          <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">申請狀態分佈</h3><canvas id="status-chart"></canvas></div>
                          <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">各院區申請量</h3><canvas id="branch-chart"></canvas></div>
@@ -238,6 +256,9 @@
             const statsLoginPrompt = document.getElementById('stats-login-prompt');
             const statsLoginPromptBtn = document.getElementById('stats-login-prompt-btn');
             const exportExcelBtn = document.getElementById('export-excel-btn');
+            const statsMonthFilter = document.getElementById('stats-month-filter');
+            const statsTotalRequests = document.getElementById('stats-total-requests');
+            const statsDriverTrips = document.getElementById('stats-driver-trips');
 
 
             // --- MODAL ELEMENTS & FUNCTIONS ---
@@ -299,7 +320,16 @@
                 tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
                 tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`));
                 if (tabName === 'admin') updateAdminTabVisibility();
-                if (tabName === 'stats') { updateStatsTabVisibility(); renderStatistics(); }
+                if (tabName === 'stats') { 
+                    if (!statsMonthFilter.value) {
+                         const now = new Date();
+                         const year = now.getFullYear();
+                         const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                         statsMonthFilter.value = `${year}-${month}`;
+                    }
+                    updateStatsTabVisibility(); 
+                    renderStatistics(); 
+                }
             }
 
             // --- AUTHENTICATION & UI ---
@@ -346,6 +376,20 @@
             
             function getStatusBadgeClass(status) { return status === '已派車' ? 'status-dispatched' : status === '案件取消' ? 'status-cancelled' : status === '無法派車' ? 'status-rejected' : 'status-pending'; }
 
+            // --- DATA FILTERING ---
+            function getFilteredRequests() {
+                const filterValue = statsMonthFilter.value; // YYYY-MM
+                if (!filterValue) {
+                    return state.requests;
+                }
+                const [year, month] = filterValue.split('-').map(Number);
+                return state.requests.filter(req => {
+                    if (!req.startTime) return false;
+                    const reqDate = new Date(req.startTime);
+                    return reqDate.getFullYear() === year && (reqDate.getMonth() + 1) === month;
+                });
+            }
+
             // --- RENDER FUNCTIONS ---
             function renderAdminList() {
                 requestsList.innerHTML = '';
@@ -385,10 +429,16 @@
             
             function renderStatistics() {
                 if (!state.isLoggedIn) return;
+                
+                const filteredRequests = getFilteredRequests();
+
+                // Update key metrics
+                statsTotalRequests.textContent = filteredRequests.length;
+                statsDriverTrips.textContent = filteredRequests.filter(r => r.dispatchStatus === '已派車' && r.driverName).length;
 
                 // Status Chart (Pie)
                 const statusCtx = document.getElementById('status-chart').getContext('2d');
-                const statusCounts = state.requests.reduce((acc, req) => {
+                const statusCounts = filteredRequests.reduce((acc, req) => {
                     acc[req.dispatchStatus] = (acc[req.dispatchStatus] || 0) + 1;
                     return acc;
                 }, {});
@@ -410,7 +460,7 @@
 
                 // Branch Chart (Bar)
                 const branchCtx = document.getElementById('branch-chart').getContext('2d');
-                const branchCounts = state.requests.reduce((acc, req) => {
+                const branchCounts = filteredRequests.reduce((acc, req) => {
                     req.branch.forEach(b => {
                         acc[b] = (acc[b] || 0) + 1;
                     });
@@ -436,7 +486,8 @@
 
             // --- EXCEL EXPORT ---
             function exportToExcel() {
-                const dataToExport = state.requests.map(req => ({
+                const filteredRequests = getFilteredRequests();
+                const dataToExport = filteredRequests.map(req => ({
                     '申請單號': req.id,
                     '申請狀態': req.dispatchStatus,
                     '申請單位': req.applicantUnit,
@@ -455,7 +506,7 @@
                 const worksheet = XLSX.utils.json_to_sheet(dataToExport);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, '派車申請單');
-                XLSX.writeFile(workbook, `派車申請單_${new Date().toISOString().slice(0,10)}.xlsx`);
+                XLSX.writeFile(workbook, `派車申請單_${statsMonthFilter.value || '全部'}.xlsx`);
             }
 
 
@@ -493,6 +544,7 @@
             adminLoginPromptBtn.addEventListener('click', promptLogin);
             statsLoginPromptBtn.addEventListener('click', promptLogin);
             exportExcelBtn.addEventListener('click', exportToExcel);
+            statsMonthFilter.addEventListener('change', renderStatistics);
             
             tabButtons.forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.dataset.tab)));
             
