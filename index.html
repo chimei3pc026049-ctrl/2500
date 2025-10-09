@@ -8,6 +8,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      
+        // --- START: Firebase Configuration ---
+        // TODO: 請將此處替換為您自己的 Firebase 專案設定
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY",
+          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+          projectId: "YOUR_PROJECT_ID",
+          storageBucket: "YOUR_PROJECT_ID.appspot.com",
+          messagingSenderId: "YOUR_SENDER_ID",
+          appId: "YOUR_APP_ID"
+        };
+        // --- END: Firebase Configuration ---
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Sign in user anonymously
+        signInAnonymously(auth).catch((error) => {
+            console.error("Anonymous sign-in failed:", error);
+        });
+
+        window.db = db; // Make db globally available
+        window.firebase = { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy };
+      </script>
+
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
@@ -226,7 +260,7 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
         window.addEventListener('load', () => {
             const state = {
                 isLoggedIn: false,
@@ -236,6 +270,10 @@
             };
             
             let statusChartInstance, branchChartInstance, driverChartInstance;
+
+            const db = window.db;
+            const { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy } = window.firebase;
+            const requestsCollection = collection(db, "dispatchRequests");
 
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
@@ -339,8 +377,6 @@
 
             // --- AUTHENTICATION & UI ---
             function logout() { state.isLoggedIn = false; showAlert('已登出。'); updateUI(); resetForm(); setActiveTab('apply'); }
-            function loadRequests() { state.requests = JSON.parse(localStorage.getItem('dispatchRequests') || '[]'); }
-            function saveRequests() { localStorage.setItem('dispatchRequests', JSON.stringify(state.requests)); }
             
             function updateAdminTabVisibility() {
                 const showAdminView = state.isLoggedIn && state.activeTab === 'admin';
@@ -401,7 +437,7 @@
             function renderAdminList() {
                 requestsList.innerHTML = '';
                 if(state.requests.length === 0) { requestsList.innerHTML = `<p class="text-center text-gray-500">目前沒有任何申請記錄。</p>`; return; }
-                [...state.requests].sort((a, b) => b.id - a.id).forEach(req => {
+                [...state.requests].forEach(req => {
                     const card = document.createElement('div');
                     card.className = 'request-card p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3';
                     card.innerHTML = `<div class="flex-grow"><p class="font-semibold text-gray-800">${req.applicantUnit} - ${req.applicantName}</p><p class="text-sm text-gray-500">事由: ${req.reason} | 時間: ${req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定'}</p></div><div class="flex items-center gap-4"><span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span><button class="text-sm text-blue-600 hover:text-blue-800 font-medium edit-btn">編輯</button><button class="text-sm text-red-600 hover:text-red-800 font-medium delete-btn">刪除</button></div>`;
@@ -417,7 +453,7 @@
                 const results = state.requests.filter(req => req.applicantName.includes(query));
                 searchResults.innerHTML = '';
                 if (results.length === 0) { searchResults.innerHTML = `<p class="text-center text-gray-500">找不到符合「${query}」的申請記錄。</p>`; return; }
-                results.sort((a, b) => b.id - a.id).forEach(req => {
+                results.forEach(req => {
                     const card = document.createElement('div');
                     card.className = 'p-4 border rounded-lg bg-gray-50 space-y-2';
                     card.innerHTML = `
@@ -576,7 +612,10 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            function deleteRequest(id) { state.requests = state.requests.filter(req => req.id !== id); saveRequests(); updateUI(); resetForm(); }
+            async function deleteRequest(id) { 
+                await deleteDoc(doc(db, "dispatchRequests", id));
+                resetForm(); 
+            }
 
             // --- EVENT LISTENERS ---
             authBtn.addEventListener('click', () => { state.isLoggedIn ? logout() : promptLogin(); });
@@ -591,7 +630,7 @@
             searchBtn.addEventListener('click', handleSearch);
             searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSearch(); });
 
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const applicantName = document.getElementById('applicant_name').value;
                 const managerName = document.getElementById('manager_name').value;
@@ -610,17 +649,33 @@
                 };
 
                 if (state.editingRequestId) {
-                    const index = state.requests.findIndex(r => r.id === state.editingRequestId);
-                    if (index > -1) { state.requests[index] = { ...state.requests[index], ...formData }; showAlert('申請單已更新！'); }
+                    const docRef = doc(db, "dispatchRequests", state.editingRequestId);
+                    await updateDoc(docRef, formData);
+                    showAlert('申請單已更新！');
                 } else {
-                    formData.id = Date.now(); formData.dispatchStatus = '待處理'; state.requests.push(formData); showAlert('新申請已提交！');
+                    formData.createdAt = Date.now();
+                    formData.dispatchStatus = '待處理';
+                    await addDoc(requestsCollection, formData);
+                    showAlert('新申請已提交！');
                 }
-
-                saveRequests(); updateUI(); resetForm();
+                
+                resetForm();
             });
 
             // --- INITIALIZATION ---
-            function init() { loadRequests(); setActiveTab('apply'); updateUI(); }
+            function init() {
+                const q = query(requestsCollection, orderBy("createdAt", "desc"));
+                onSnapshot(q, (snapshot) => {
+                    state.requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    updateUI();
+                    if(state.activeTab === 'stats' && state.isLoggedIn){
+                        renderStatistics();
+                    }
+                });
+                
+                setActiveTab('apply'); 
+                updateUI(); 
+            }
             init();
         });
     </script>
