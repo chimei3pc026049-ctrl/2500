@@ -6,6 +6,8 @@
     <title>奇美醫院派車申請系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
@@ -52,6 +54,7 @@
             color: #4b5563;
             border-bottom: 2px solid transparent;
             transition: all 0.2s ease;
+            position: relative;
         }
         .tab-btn:hover {
             background-color: #f3f4f6;
@@ -74,7 +77,11 @@
         <nav class="flex border-b border-gray-200 bg-white rounded-t-lg">
             <button data-tab="apply" class="tab-btn active">填寫申請</button>
             <button data-tab="search" class="tab-btn">查詢狀態</button>
-            <button data-tab="admin" class="tab-btn">管理後台</button>
+            <button data-tab="admin" class="tab-btn flex items-center">
+                管理後台
+                <span id="pending-count" class="ml-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"></span>
+            </button>
+            <button data-tab="stats" class="tab-btn hidden">統計分析</button>
         </nav>
 
         <main>
@@ -164,6 +171,24 @@
                     <button id="admin-login-prompt-btn" class="mt-4 py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700">立即登入</button>
                 </div>
             </div>
+
+            <!-- Stats Tab -->
+            <div id="tab-content-stats" class="tab-content hidden bg-white p-6 sm:p-8 rounded-b-2xl shadow-lg">
+                 <div id="stats-view" class="hidden">
+                     <div class="flex justify-between items-center mb-6 border-b pb-4">
+                         <h2 class="text-xl font-bold text-gray-800">數據統計分析</h2>
+                         <button id="export-excel-btn" class="py-2 px-4 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">匯出 Excel</button>
+                     </div>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                         <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">申請狀態分佈</h3><canvas id="status-chart"></canvas></div>
+                         <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">各院區申請量</h3><canvas id="branch-chart"></canvas></div>
+                     </div>
+                 </div>
+                 <div id="stats-login-prompt" class="text-center py-10">
+                     <p class="text-gray-600">此為管理員專區，請先登入查看統計數據。</p>
+                     <button id="stats-login-prompt-btn" class="mt-4 py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700">立即登入</button>
+                 </div>
+            </div>
         </main>
     </div>
 
@@ -184,6 +209,8 @@
                 editingRequestId: null,
                 activeTab: 'apply',
             };
+            
+            let statusChartInstance, branchChartInstance;
 
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
@@ -200,12 +227,20 @@
             const adminLoginPrompt = document.getElementById('admin-login-prompt');
             const adminLoginPromptBtn = document.getElementById('admin-login-prompt-btn');
             const requestsList = document.getElementById('requests-list');
+            const pendingCountBadge = document.getElementById('pending-count');
             
             const searchInput = document.getElementById('search-input');
             const searchBtn = document.getElementById('search-btn');
             const searchResults = document.getElementById('search-results');
 
-            // --- MODAL ELEMENTS & FUNCTIONS (unchanged) ---
+            const statsTabBtn = document.querySelector('button[data-tab="stats"]');
+            const statsView = document.getElementById('stats-view');
+            const statsLoginPrompt = document.getElementById('stats-login-prompt');
+            const statsLoginPromptBtn = document.getElementById('stats-login-prompt-btn');
+            const exportExcelBtn = document.getElementById('export-excel-btn');
+
+
+            // --- MODAL ELEMENTS & FUNCTIONS ---
             const modal = document.getElementById('custom-modal');
             const modalTitle = document.getElementById('modal-title');
             const modalContent = document.getElementById('modal-content');
@@ -261,13 +296,10 @@
             // --- TAB HANDLING ---
             function setActiveTab(tabName) {
                 state.activeTab = tabName;
-                tabButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.tab === tabName);
-                });
-                tabContents.forEach(content => {
-                    content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`);
-                });
+                tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+                tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`));
                 if (tabName === 'admin') updateAdminTabVisibility();
+                if (tabName === 'stats') { updateStatsTabVisibility(); renderStatistics(); }
             }
 
             // --- AUTHENTICATION & UI ---
@@ -280,18 +312,35 @@
                 adminView.classList.toggle('hidden', !showAdminView);
                 adminLoginPrompt.classList.toggle('hidden', showAdminView);
             }
+             function updateStatsTabVisibility() {
+                const showStatsView = state.isLoggedIn && state.activeTab === 'stats';
+                statsView.classList.toggle('hidden', !showStatsView);
+                statsLoginPrompt.classList.toggle('hidden', showStatsView);
+            }
 
             function updateUI() {
                 if (state.isLoggedIn) {
                     authBtn.textContent = '登出 (管理員)';
                     authBtn.classList.replace('bg-white', 'bg-green-600'); authBtn.classList.replace('hover:bg-gray-50', 'hover:bg-green-700'); authBtn.classList.add('text-white');
                     adminFields.forEach(el => { el.disabled = false; el.classList.remove('disabled-input'); });
+                    statsTabBtn.classList.remove('hidden');
+
+                    const pendingCount = state.requests.filter(r => r.dispatchStatus === '待處理').length;
+                    if(pendingCount > 0) {
+                        pendingCountBadge.textContent = pendingCount;
+                        pendingCountBadge.classList.remove('hidden');
+                    } else {
+                        pendingCountBadge.classList.add('hidden');
+                    }
                 } else {
                     authBtn.textContent = '管理員登入';
                     authBtn.classList.replace('bg-green-600', 'bg-white'); authBtn.classList.replace('hover:bg-green-700', 'hover:bg-gray-50'); authBtn.classList.remove('text-white');
                     adminFields.forEach(el => { el.disabled = true; el.classList.add('disabled-input'); });
+                    statsTabBtn.classList.add('hidden');
+                    pendingCountBadge.classList.add('hidden');
                 }
                 updateAdminTabVisibility();
+                updateStatsTabVisibility();
                 renderAdminList();
             }
             
@@ -333,6 +382,82 @@
                     searchResults.appendChild(card);
                 });
             }
+            
+            function renderStatistics() {
+                if (!state.isLoggedIn) return;
+
+                // Status Chart (Pie)
+                const statusCtx = document.getElementById('status-chart').getContext('2d');
+                const statusCounts = state.requests.reduce((acc, req) => {
+                    acc[req.dispatchStatus] = (acc[req.dispatchStatus] || 0) + 1;
+                    return acc;
+                }, {});
+                
+                if(statusChartInstance) statusChartInstance.destroy();
+                statusChartInstance = new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(statusCounts),
+                        datasets: [{
+                            data: Object.values(statusCounts),
+                            backgroundColor: ['#fef3c7', '#d1fae5', '#fee2e2', '#e5e7eb'],
+                            borderColor: ['#92400e', '#065f46', '#991b1b', '#4b5563'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true }
+                });
+
+                // Branch Chart (Bar)
+                const branchCtx = document.getElementById('branch-chart').getContext('2d');
+                const branchCounts = state.requests.reduce((acc, req) => {
+                    req.branch.forEach(b => {
+                        acc[b] = (acc[b] || 0) + 1;
+                    });
+                    return acc;
+                }, {});
+
+                if(branchChartInstance) branchChartInstance.destroy();
+                branchChartInstance = new Chart(branchCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(branchCounts),
+                        datasets: [{
+                            label: '申請次數',
+                            data: Object.values(branchCounts),
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                });
+            }
+
+            // --- EXCEL EXPORT ---
+            function exportToExcel() {
+                const dataToExport = state.requests.map(req => ({
+                    '申請單號': req.id,
+                    '申請狀態': req.dispatchStatus,
+                    '申請單位': req.applicantUnit,
+                    '申請人': req.applicantName,
+                    '主管': req.managerName,
+                    '用車事由': req.reason,
+                    '院區': req.branch.join(', '),
+                    '派車時間 (起)': req.startTime,
+                    '派車時間 (迄)': req.endTime,
+                    '派車方式': req.dispatchMethod,
+                    '司機姓名': req.driverName,
+                    '司機電話': req.driverPhone,
+                    '備註': req.remarks
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, '派車申請單');
+                XLSX.writeFile(workbook, `派車申請單_${new Date().toISOString().slice(0,10)}.xlsx`);
+            }
+
 
             // --- FORM LOGIC ---
             function resetForm() { form.reset(); state.editingRequestId = null; requestIdInput.value = ''; submitBtn.textContent = '提交新申請'; submitBtn.classList.replace('bg-green-600', 'bg-blue-600'); submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700'); }
@@ -366,6 +491,8 @@
             // --- EVENT LISTENERS ---
             authBtn.addEventListener('click', () => { state.isLoggedIn ? logout() : promptLogin(); });
             adminLoginPromptBtn.addEventListener('click', promptLogin);
+            statsLoginPromptBtn.addEventListener('click', promptLogin);
+            exportExcelBtn.addEventListener('click', exportToExcel);
             
             tabButtons.forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.dataset.tab)));
             
