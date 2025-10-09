@@ -46,6 +46,13 @@
         .animate-shake {
           animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
         }
+        
+        @keyframes pulse-badge {
+          50% { opacity: .6; }
+        }
+        .animate-pulse-badge {
+          animation: pulse-badge 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
 
         .tab-btn {
             padding: 0.75rem 1.5rem;
@@ -79,7 +86,7 @@
             <button data-tab="search" class="tab-btn">查詢狀態</button>
             <button data-tab="admin" class="tab-btn flex items-center">
                 管理後台
-                <span id="pending-count" class="ml-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"></span>
+                <span id="pending-count" class="ml-2 bg-red-600 text-white text-sm font-bold px-2.5 py-1 rounded-full hidden"></span>
             </button>
             <button data-tab="stats" class="tab-btn hidden">統計分析</button>
         </nav>
@@ -190,14 +197,14 @@
                                 <p class="text-2xl font-bold text-blue-600" id="stats-total-requests">0</p>
                                 <p class="text-sm font-medium text-gray-500">總申請筆數</p>
                             </div>
-                            <div class="p-2">
-                                <p class="text-2xl font-bold text-green-600" id="stats-driver-trips">0</p>
-                                <p class="text-sm font-medium text-gray-500">司機總趟數</p>
-                            </div>
                         </div>
                     </div>
 
                      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="p-4 border rounded-lg lg:col-span-2">
+                            <h3 class="text-center font-semibold mb-4 text-gray-700">各司機趟次統計</h3>
+                            <canvas id="driver-chart"></canvas>
+                        </div>
                          <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">申請狀態分佈</h3><canvas id="status-chart"></canvas></div>
                          <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">各院區申請量</h3><canvas id="branch-chart"></canvas></div>
                      </div>
@@ -228,7 +235,7 @@
                 activeTab: 'apply',
             };
             
-            let statusChartInstance, branchChartInstance;
+            let statusChartInstance, branchChartInstance, driverChartInstance;
 
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
@@ -258,8 +265,6 @@
             const exportExcelBtn = document.getElementById('export-excel-btn');
             const statsMonthFilter = document.getElementById('stats-month-filter');
             const statsTotalRequests = document.getElementById('stats-total-requests');
-            const statsDriverTrips = document.getElementById('stats-driver-trips');
-
 
             // --- MODAL ELEMENTS & FUNCTIONS ---
             const modal = document.getElementById('custom-modal');
@@ -359,8 +364,10 @@
                     if(pendingCount > 0) {
                         pendingCountBadge.textContent = pendingCount;
                         pendingCountBadge.classList.remove('hidden');
+                        pendingCountBadge.classList.add('animate-pulse-badge');
                     } else {
                         pendingCountBadge.classList.add('hidden');
+                        pendingCountBadge.classList.remove('animate-pulse-badge');
                     }
                 } else {
                     authBtn.textContent = '管理員登入';
@@ -434,7 +441,39 @@
 
                 // Update key metrics
                 statsTotalRequests.textContent = filteredRequests.length;
-                statsDriverTrips.textContent = filteredRequests.filter(r => r.dispatchStatus === '已派車' && r.driverName).length;
+                
+                // Driver trips chart (horizontal bar)
+                const driverCtx = document.getElementById('driver-chart').getContext('2d');
+                const driverTrips = filteredRequests
+                    .filter(r => r.dispatchStatus === '已派車' && r.driverName)
+                    .reduce((acc, req) => {
+                        acc[req.driverName] = (acc[req.driverName] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                const sortedDrivers = Object.entries(driverTrips).sort((a, b) => b[1] - a[1]);
+
+                if (driverChartInstance) driverChartInstance.destroy();
+                driverChartInstance = new Chart(driverCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedDrivers.map(d => d[0]),
+                        datasets: [{
+                            label: '趟數',
+                            data: sortedDrivers.map(d => d[1]),
+                            backgroundColor: 'rgba(22, 163, 74, 0.5)',
+                            borderColor: 'rgba(22, 163, 74, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                        plugins: { legend: { display: false } },
+                        responsive: true,
+                    }
+                });
+
 
                 // Status Chart (Pie)
                 const statusCtx = document.getElementById('status-chart').getContext('2d');
