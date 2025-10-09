@@ -13,19 +13,13 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       
         // --- START: Firebase Configuration ---
-        // TODO: 請將此處替換為您自己的 Firebase 專案設定
-        const firebaseConfig = {
-          apiKey: "YOUR_API_KEY",
-          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-          projectId: "YOUR_PROJECT_ID",
-          storageBucket: "YOUR_PROJECT_ID.appspot.com",
-          messagingSenderId: "YOUR_SENDER_ID",
-          appId: "YOUR_APP_ID"
-        };
+        // Use environment variables provided by the platform
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         // --- END: Firebase Configuration ---
       
         // Initialize Firebase
@@ -33,13 +27,21 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Sign in user anonymously
-        signInAnonymously(auth).catch((error) => {
-            console.error("Anonymous sign-in failed:", error);
-        });
-
-        window.db = db; // Make db globally available
-        window.firebase = { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy };
+        // Sign in user
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            signInWithCustomToken(auth, __initial_auth_token).catch((error) => {
+                console.error("Custom token sign-in failed:", error);
+            });
+        } else {
+            signInAnonymously(auth).catch((error) => {
+                console.error("Anonymous sign-in failed:", error);
+            });
+        }
+        
+        // Make db and functions globally available
+        window.db = db; 
+        window.appId = appId;
+        window.firebase = { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp };
       </script>
 
     <style>
@@ -272,8 +274,10 @@
             let statusChartInstance, branchChartInstance, driverChartInstance;
 
             const db = window.db;
-            const { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy } = window.firebase;
-            const requestsCollection = collection(db, "dispatchRequests");
+            const appId = window.appId;
+            const { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } = window.firebase;
+            const requestsCollectionPath = `/artifacts/${appId}/public/data/dispatchRequests`;
+            const requestsCollection = collection(db, requestsCollectionPath);
 
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
@@ -613,7 +617,7 @@
             }
 
             async function deleteRequest(id) { 
-                await deleteDoc(doc(db, "dispatchRequests", id));
+                await deleteDoc(doc(db, requestsCollectionPath, id));
                 resetForm(); 
             }
 
@@ -649,14 +653,14 @@
                 };
 
                 if (state.editingRequestId) {
-                    const docRef = doc(db, "dispatchRequests", state.editingRequestId);
+                    const docRef = doc(db, requestsCollectionPath, state.editingRequestId);
                     await updateDoc(docRef, formData);
-                    showAlert('申請單已更新！');
+                    showAlert('申請單更新成功！');
                 } else {
-                    formData.createdAt = Date.now();
+                    formData.createdAt = serverTimestamp();
                     formData.dispatchStatus = '待處理';
                     await addDoc(requestsCollection, formData);
-                    showAlert('新申請已提交！');
+                    showAlert('申請完成 請靜候管理單位處理');
                 }
                 
                 resetForm();
