@@ -103,11 +103,11 @@
                             <div id="branch-options" class="mt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-base text-gray-700">
                                   <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
                                   <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
-                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked><span>佳里院區</span></label>
                             </div>
                         </div>
                         <div><label for="reason" class="block text-sm font-medium text-gray-700">用車事由</label><input type="text" id="reason" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="標準化文件輔導顧問接送"></div>
-                        <div><label class="block text-sm font-medium text-gray-700">車輛種類</label><div class="mt-2 flex items-center space-x-6"><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="中巴" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>中巴</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="小客" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>小客</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="其他" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>其他</span></label></div></div>
+                        <div><label class="block text-sm font-medium text-gray-700">車輛種類</label><div class="mt-2 flex items-center space-x-6"><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="中巴" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>中巴</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="小客" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked><span>小客</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="其他" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>其他</span></label></div></div>
                         <div><label for="destination" class="block text-sm font-medium text-gray-700">駛達地點</label><input type="text" id="destination" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="嘉義高鐵站 - 佳里院區"></div>
                         <div><label for="passengers" class="block text-sm font-medium text-gray-700">搭乘人數</label><input type="number" id="passengers" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="1"></div>
                         <div><label for="start_time" class="block text-sm font-medium text-gray-700">預定派車時間 (起)</label><input type="datetime-local" id="start_time" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
@@ -325,6 +325,26 @@
                 passwordInput.onkeydown = (e) => { if (e.key === 'Enter') handleLogin(); };
                 usernameInput.onkeydown = (e) => { if (e.key === 'Enter') passwordInput.focus(); };
                 cancelBtn.onclick = hideModal;
+            }
+
+            function setDefaultDateTime() {
+                const startTimeInput = document.getElementById('start_time');
+                const endTimeInput = document.getElementById('end_time');
+
+                if (!startTimeInput.value) {
+                    const now = new Date();
+                    // Adjust for local timezone to correctly display in datetime-local input
+                    const offset = now.getTimezoneOffset();
+                    const localNow = new Date(now.getTime() - (offset * 60 * 1000));
+                    startTimeInput.value = localNow.toISOString().slice(0, 16);
+                }
+                
+                if (!endTimeInput.value) {
+                    const startTime = new Date(startTimeInput.value);
+                    // Default end time to 1 hour after start time
+                    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); 
+                    endTimeInput.value = endTime.toISOString().slice(0, 16);
+                }
             }
 
             // --- TAB HANDLING ---
@@ -568,7 +588,15 @@
 
 
             // --- FORM LOGIC ---
-            function resetForm() { form.reset(); state.editingRequestId = null; requestIdInput.value = ''; submitBtn.textContent = '提交新申請'; submitBtn.classList.replace('bg-green-600', 'bg-blue-600'); submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700'); }
+            function resetForm() { 
+                form.reset(); 
+                state.editingRequestId = null; 
+                requestIdInput.value = ''; 
+                submitBtn.textContent = '提交新申請'; 
+                submitBtn.classList.replace('bg-green-600', 'bg-blue-600'); 
+                submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700'); 
+                setDefaultDateTime();
+            }
             
             function loadRequestIntoForm(id) {
                 const request = state.requests.find(r => r.id === id); if (!request) return;
@@ -752,6 +780,7 @@
                 initFirebase(); // Start the Firebase connection
                 setActiveTab('apply'); 
                 updateUI();
+                setDefaultDateTime();
             }
             init();
         });
