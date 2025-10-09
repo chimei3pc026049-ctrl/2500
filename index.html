@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>佳里奇美醫院派車申請系統</title>
+    <title>奇美醫院派車申請系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -76,7 +76,7 @@
     <div class="w-full max-w-5xl mx-auto p-4 sm:p-6">
         <!-- Header -->
         <header class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">佳里奇美醫院派車申請系統</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">奇美醫院派車申請系統</h1>
             <button id="auth-btn" class="py-2 px-4 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">管理員登入</button>
         </header>
 
@@ -641,8 +641,25 @@
                     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
                     if (!firebaseConfig.apiKey) {
-                        showAlert('系統設定錯誤，無法連接至資料庫。', '嚴重錯誤');
-                        console.error("Firebase config is missing or invalid.");
+                        showAlert('系統設定檔遺失或無效，因此無法連接到雲端資料庫。請確認應用程式是否在正確的環境中執行。部分功能將會停用。', '資料庫連線失敗');
+                        console.error("Firebase config is missing or invalid (__firebase_config). App will run in a disabled state.");
+
+                        // Gracefully disable DB-dependent features
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = '資料庫未連接';
+                        submitBtn.classList.add('cursor-not-allowed', 'bg-gray-400', 'hover:bg-gray-400');
+                        submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+
+                        searchBtn.disabled = true;
+                        searchInput.disabled = true;
+                        searchInput.placeholder = '資料庫未連接';
+                        
+                        const adminTabBtn = document.querySelector('button[data-tab="admin"]');
+                        if (adminTabBtn) adminTabBtn.disabled = true;
+                        
+                        // This tab is already hidden by default, but disabling is good practice
+                        if (statsTabBtn) statsTabBtn.disabled = true; 
+
                         return;
                     }
 
@@ -741,3 +758,4 @@
     </script>
 </body>
 </html>
+
