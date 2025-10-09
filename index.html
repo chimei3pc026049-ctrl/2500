@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奇美醫院派車申請系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        .disabled-input {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+        .request-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .request-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            text-transform: uppercase;
+        }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-dispatched { background-color: #d1fae5; color: #065f46; }
+        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
+        .status-rejected { background-color: #e5e7eb; color: #4b5563; }
+        
+        @keyframes shake {
+          10%, 90% { transform: translate3d(-1px, 0, 0); }
+          20%, 80% { transform: translate3d(2px, 0, 0); }
+          30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+          40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .animate-shake {
+          animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #4b5563;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background-color: #f3f4f6;
+        }
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="w-full max-w-5xl mx-auto p-4 sm:p-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">奇美醫院派車申請系統</h1>
+            <button id="auth-btn" class="py-2 px-4 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">管理員登入</button>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="flex border-b border-gray-200 bg-white rounded-t-lg">
+            <button data-tab="apply" class="tab-btn active">填寫申請</button>
+            <button data-tab="search" class="tab-btn">查詢狀態</button>
+            <button data-tab="admin" class="tab-btn">管理後台</button>
+        </nav>
+
+        <main>
+            <!-- Apply Tab -->
+            <div id="tab-content-apply" class="tab-content bg-white p-6 sm:p-8 rounded-b-2xl shadow-lg">
+                <form id="dispatchForm" class="space-y-6">
+                    <input type="hidden" id="request-id">
+                    <!-- Form Fields Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 border-t border-b border-gray-200 py-6">
+                        <div class="lg:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700">院區</label>
+                            <div id="branch-options" class="mt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-base text-gray-700">
+                                 <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
+                                 <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
+                                 <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
+                            </div>
+                        </div>
+                        <div><label for="reason" class="block text-sm font-medium text-gray-700">用車事由</label><input type="text" id="reason" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="標準化文件輔導顧問接送"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">車輛種類</label><div class="mt-2 flex items-center space-x-6"><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="中巴" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>中巴</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="小客" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>小客</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="其他" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>其他</span></label></div></div>
+                        <div><label for="destination" class="block text-sm font-medium text-gray-700">駛達地點</label><input type="text" id="destination" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="嘉義高鐵站 - 佳里院區"></div>
+                        <div><label for="passengers" class="block text-sm font-medium text-gray-700">搭乘人數</label><input type="number" id="passengers" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="1"></div>
+                        <div><label for="start_time" class="block text-sm font-medium text-gray-700">預定派車時間 (起)</label><input type="datetime-local" id="start_time" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                        <div><label for="end_time" class="block text-sm font-medium text-gray-700">預定派車時間 (迄)</label><input type="datetime-local" id="end_time" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                        <div><label for="applicant_unit" class="block text-sm font-medium text-gray-700">申請單位</label><input type="text" id="applicant_unit" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="企劃組"></div>
+                        <div><label for="cost_code" class="block text-sm font-medium text-gray-700">費用部門代號</label><input type="text" id="cost_code" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="2013"></div>
+                        <div><label for="extension" class="block text-sm font-medium text-gray-700">聯絡分機</label><input type="text" id="extension" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="32911"></div>
+                        <div><label for="contact_group" class="block text-sm font-medium text-gray-700">聯絡群組</label><input type="text" id="contact_group" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="8406"></div>
+                        <div><label for="applicant_name" class="block text-sm font-medium text-gray-700">申請人姓名</label><input type="text" id="applicant_name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="請輸入姓名"></div>
+                        <div><label for="manager_name" class="block text-sm font-medium text-gray-700">部門主管</label><input type="text" id="manager_name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="請輸入主管姓名"></div>
+                        <div class="lg:col-span-3">
+                            <label for="remarks" class="block text-sm font-medium text-gray-700">備註</label>
+                            <textarea id="remarks" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="若有特殊需求請在此說明..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-6 mt-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">承辦單位處理狀況</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div>
+                                <label for="dispatch_status" class="block text-sm font-medium text-gray-700">處理狀況</label>
+                                <select id="dispatch_status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input"><option value="待處理">待處理</option><option value="已派車">已派車</option><option value="案件取消">案件取消</option><option value="無法派車">無法派車</option></select>
+                            </div>
+                            <div>
+                                <label for="dispatch_method" class="block text-sm font-medium text-gray-700">派車方式</label>
+                                <input type="text" id="dispatch_method" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
+                            </div>
+                             <div>
+                                <label for="driver_name" class="block text-sm font-medium text-gray-700">司機姓名</label>
+                                <input type="text" id="driver_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
+                            </div>
+                             <div>
+                                <label for="driver_phone" class="block text-sm font-medium text-gray-700">司機電話</label>
+                                <input type="text" id="driver_phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 text-center flex items-center justify-center space-x-4">
+                        <button type="submit" id="submit-btn" class="w-full sm:w-auto inline-flex justify-center py-3 px-12 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">提交新申請</button>
+                        <button type="button" id="clear-btn" class="w-full sm:w-auto inline-flex justify-center py-3 px-8 border border-gray-300 shadow-sm text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50">清空表單</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="tab-content-search" class="tab-content hidden bg-white p-6 sm:p-8 rounded-b-2xl shadow-lg">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">查詢申請狀態</h2>
+                <div class="flex items-center space-x-2 mb-6">
+                    <input type="text" id="search-input" placeholder="請輸入申請人姓名進行查詢..." class="flex-grow block w-full px-4 py-2 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <button id="search-btn" class="py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700">查詢</button>
+                </div>
+                <div id="search-results" class="space-y-4">
+                    <p class="text-center text-gray-500">請輸入姓名以查詢您的申請記錄。</p>
+                </div>
+            </div>
+
+            <!-- Admin Tab -->
+            <div id="tab-content-admin" class="tab-content hidden bg-white p-6 sm:p-8 rounded-b-2xl shadow-lg">
+                <div id="admin-view">
+                     <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">所有派車申請</h2>
+                     <div id="requests-list" class="space-y-4">
+                        <!-- Requests will be injected here -->
+                     </div>
+                </div>
+                 <div id="admin-login-prompt" class="text-center py-10">
+                    <p class="text-gray-600">此為管理員專區，請先登入。</p>
+                    <button id="admin-login-prompt-btn" class="mt-4 py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700">立即登入</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm transform transition-all">
+            <h3 id="modal-title" class="text-lg font-medium text-gray-900">通知</h3>
+            <div id="modal-content" class="mt-2 text-sm text-gray-600"></div>
+            <div id="modal-buttons" class="mt-5 sm:mt-6 flex justify-end space-x-3"></div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const state = {
+                isLoggedIn: false,
+                requests: [],
+                editingRequestId: null,
+                activeTab: 'apply',
+            };
+
+            // --- CACHE ELEMENTS ---
+            const form = document.getElementById('dispatchForm');
+            const authBtn = document.getElementById('auth-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const requestIdInput = document.getElementById('request-id');
+            const adminFields = ['dispatch_status', 'dispatch_method', 'driver_name', 'driver_phone'].map(id => document.getElementById(id));
+            
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            const adminView = document.getElementById('admin-view');
+            const adminLoginPrompt = document.getElementById('admin-login-prompt');
+            const adminLoginPromptBtn = document.getElementById('admin-login-prompt-btn');
+            const requestsList = document.getElementById('requests-list');
+            
+            const searchInput = document.getElementById('search-input');
+            const searchBtn = document.getElementById('search-btn');
+            const searchResults = document.getElementById('search-results');
+
+            // --- MODAL ELEMENTS & FUNCTIONS (unchanged) ---
+            const modal = document.getElementById('custom-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalButtons = document.getElementById('modal-buttons');
+
+            function hideModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+            function showAlert(message, title = '通知') { 
+                modalTitle.textContent = title;
+                modalContent.innerHTML = `<p>${message}</p>`;
+                modalButtons.innerHTML = `<button id="modal-ok-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none">確定</button>`;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                const okBtn = document.getElementById('modal-ok-btn');
+                okBtn.onclick = hideModal;
+                okBtn.focus();
+            }
+            function showConfirm(message, callback, title = '確認操作') {
+                modalTitle.textContent = title;
+                modalContent.innerHTML = `<p>${message}</p>`;
+                modalButtons.innerHTML = `
+                    <button id="modal-cancel-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">取消</button>
+                    <button id="modal-confirm-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none">確定</button>
+                `;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                const confirmBtn = document.getElementById('modal-confirm-btn');
+                const cancelBtn = document.getElementById('modal-cancel-btn');
+                confirmBtn.onclick = () => { hideModal(); if (callback) callback(true); };
+                cancelBtn.onclick = () => { hideModal(); if (callback) callback(false); };
+                confirmBtn.focus();
+            }
+            function promptLogin() {
+                modalTitle.textContent = '管理員登入';
+                modalContent.innerHTML = `<div class="space-y-4"><div><label for="modal-username" class="block text-sm font-medium text-gray-700 text-left">帳號</label><input type="text" id="modal-username" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div><label for="modal-password" class="block text-sm font-medium text-gray-700 text-left">密碼</label><input type="password" id="modal-password" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><p id="modal-error" class="text-sm text-red-600 h-4"></p></div>`;
+                modalButtons.innerHTML = `<button id="modal-cancel-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">取消</button><button id="modal-login-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none">登入</button>`;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                const loginBtn = document.getElementById('modal-login-btn'), cancelBtn = document.getElementById('modal-cancel-btn'), usernameInput = document.getElementById('modal-username'), passwordInput = document.getElementById('modal-password'), errorEl = document.getElementById('modal-error');
+                usernameInput.focus();
+                const handleLogin = () => {
+                    if (usernameInput.value === 'admin' && passwordInput.value === 'admin') {
+                        hideModal(); state.isLoggedIn = true; showAlert('登入成功！'); updateUI(); setActiveTab('admin');
+                    } else {
+                        errorEl.textContent = '帳號或密碼錯誤！'; const modalBox = modal.querySelector('div'); modalBox.classList.add('animate-shake'); setTimeout(() => { modalBox.classList.remove('animate-shake'); }, 500);
+                    }
+                };
+                loginBtn.onclick = handleLogin;
+                passwordInput.onkeydown = (e) => { if (e.key === 'Enter') handleLogin(); };
+                usernameInput.onkeydown = (e) => { if (e.key === 'Enter') passwordInput.focus(); };
+                cancelBtn.onclick = hideModal;
+            }
+
+            // --- TAB HANDLING ---
+            function setActiveTab(tabName) {
+                state.activeTab = tabName;
+                tabButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tabName);
+                });
+                tabContents.forEach(content => {
+                    content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`);
+                });
+                if (tabName === 'admin') updateAdminTabVisibility();
+            }
+
+            // --- AUTHENTICATION & UI ---
+            function logout() { state.isLoggedIn = false; showAlert('已登出。'); updateUI(); resetForm(); setActiveTab('apply'); }
+            function loadRequests() { state.requests = JSON.parse(localStorage.getItem('dispatchRequests') || '[]'); }
+            function saveRequests() { localStorage.setItem('dispatchRequests', JSON.stringify(state.requests)); }
+            
+            function updateAdminTabVisibility() {
+                const showAdminView = state.isLoggedIn && state.activeTab === 'admin';
+                adminView.classList.toggle('hidden', !showAdminView);
+                adminLoginPrompt.classList.toggle('hidden', showAdminView);
+            }
+
+            function updateUI() {
+                if (state.isLoggedIn) {
+                    authBtn.textContent = '登出 (管理員)';
+                    authBtn.classList.replace('bg-white', 'bg-green-600'); authBtn.classList.replace('hover:bg-gray-50', 'hover:bg-green-700'); authBtn.classList.add('text-white');
+                    adminFields.forEach(el => { el.disabled = false; el.classList.remove('disabled-input'); });
+                } else {
+                    authBtn.textContent = '管理員登入';
+                    authBtn.classList.replace('bg-green-600', 'bg-white'); authBtn.classList.replace('hover:bg-green-700', 'hover:bg-gray-50'); authBtn.classList.remove('text-white');
+                    adminFields.forEach(el => { el.disabled = true; el.classList.add('disabled-input'); });
+                }
+                updateAdminTabVisibility();
+                renderAdminList();
+            }
+            
+            function getStatusBadgeClass(status) { return status === '已派車' ? 'status-dispatched' : status === '案件取消' ? 'status-cancelled' : status === '無法派車' ? 'status-rejected' : 'status-pending'; }
+
+            // --- RENDER FUNCTIONS ---
+            function renderAdminList() {
+                requestsList.innerHTML = '';
+                if(state.requests.length === 0) { requestsList.innerHTML = `<p class="text-center text-gray-500">目前沒有任何申請記錄。</p>`; return; }
+                [...state.requests].sort((a, b) => b.id - a.id).forEach(req => {
+                    const card = document.createElement('div');
+                    card.className = 'request-card p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3';
+                    card.innerHTML = `<div class="flex-grow"><p class="font-semibold text-gray-800">${req.applicantUnit} - ${req.applicantName}</p><p class="text-sm text-gray-500">事由: ${req.reason} | 時間: ${req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定'}</p></div><div class="flex items-center gap-4"><span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span><button class="text-sm text-blue-600 hover:text-blue-800 font-medium edit-btn">編輯</button><button class="text-sm text-red-600 hover:text-red-800 font-medium delete-btn">刪除</button></div>`;
+                    card.querySelector('.edit-btn').addEventListener('click', () => { loadRequestIntoForm(req.id); setActiveTab('apply'); });
+                    card.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); showConfirm(`確定要刪除由 ${req.applicantName} 提出的申請嗎？`, c => c && deleteRequest(req.id)); });
+                    requestsList.appendChild(card);
+                });
+            }
+
+            function handleSearch() {
+                const query = searchInput.value.trim();
+                if (!query) { searchResults.innerHTML = `<p class="text-center text-gray-500">請輸入姓名以查詢您的申請記錄。</p>`; return; }
+                const results = state.requests.filter(req => req.applicantName.includes(query));
+                searchResults.innerHTML = '';
+                if (results.length === 0) { searchResults.innerHTML = `<p class="text-center text-gray-500">找不到符合「${query}」的申請記錄。</p>`; return; }
+                results.sort((a, b) => b.id - a.id).forEach(req => {
+                    const card = document.createElement('div');
+                    card.className = 'p-4 border rounded-lg bg-gray-50 space-y-2';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <p class="font-semibold text-gray-800">${req.applicantUnit} - ${req.applicantName}</p>
+                            <span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span>
+                        </div>
+                        <div class="text-sm text-gray-600 grid grid-cols-2 gap-x-4 gap-y-1">
+                            <p><strong>事由:</strong> ${req.reason}</p><p><strong>時間:</strong> ${req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定'}</p>
+                            <p><strong>派車方式:</strong> ${req.dispatchMethod || '---'}</p><p><strong>備註:</strong> ${req.remarks || '---'}</p>
+                            <p><strong>司機姓名:</strong> ${req.driverName || '---'}</p><p><strong>司機電話:</strong> ${req.driverPhone || '---'}</p>
+                        </div>`;
+                    searchResults.appendChild(card);
+                });
+            }
+
+            // --- FORM LOGIC ---
+            function resetForm() { form.reset(); state.editingRequestId = null; requestIdInput.value = ''; submitBtn.textContent = '提交新申請'; submitBtn.classList.replace('bg-green-600', 'bg-blue-600'); submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700'); }
+            
+            function loadRequestIntoForm(id) {
+                const request = state.requests.find(r => r.id === id); if (!request) return;
+                state.editingRequestId = id; requestIdInput.value = id;
+                document.querySelectorAll('input[name="branch"]').forEach(cb => cb.checked = request.branch.includes(cb.value));
+                
+                const fieldMapping = {
+                    reason: request.reason, destination: request.destination, passengers: request.passengers, 
+                    start_time: request.startTime, end_time: request.endTime, applicant_unit: request.applicantUnit, 
+                    cost_code: request.costCode, extension: request.extension, contact_group: request.contactGroup, 
+                    applicant_name: request.applicantName, manager_name: request.managerName, 
+                    dispatch_status: request.dispatchStatus, dispatch_method: request.dispatchMethod, 
+                    driver_name: request.driverName, driver_phone: request.driverPhone, remarks: request.remarks
+                };
+
+                for (const [key, value] of Object.entries(fieldMapping)) {
+                    const el = document.getElementById(key);
+                    if (el) el.value = value || '';
+                }
+
+                const vehicleRadio = document.querySelector(`input[name="vehicle_type"][value="${request.vehicleType}"]`); if (vehicleRadio) vehicleRadio.checked = true;
+                if (state.isLoggedIn) { submitBtn.textContent = '更新處理進度'; submitBtn.classList.replace('bg-blue-600', 'bg-green-600'); submitBtn.classList.replace('hover:bg-blue-700', 'hover:bg-green-700'); }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function deleteRequest(id) { state.requests = state.requests.filter(req => req.id !== id); saveRequests(); updateUI(); resetForm(); }
+
+            // --- EVENT LISTENERS ---
+            authBtn.addEventListener('click', () => { state.isLoggedIn ? logout() : promptLogin(); });
+            adminLoginPromptBtn.addEventListener('click', promptLogin);
+            
+            tabButtons.forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.dataset.tab)));
+            
+            clearBtn.addEventListener('click', resetForm);
+            searchBtn.addEventListener('click', handleSearch);
+            searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSearch(); });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const applicantName = document.getElementById('applicant_name').value;
+                const managerName = document.getElementById('manager_name').value;
+                if (!applicantName || !managerName) { showAlert('請填寫申請人及主管姓名！', '資料不完整'); return; }
+
+                const formData = {
+                    branch: Array.from(document.querySelectorAll('input[name="branch"]:checked')).map(cb => cb.value),
+                    reason: document.getElementById('reason').value, vehicleType: document.querySelector('input[name="vehicle_type"]:checked')?.value || null,
+                    destination: document.getElementById('destination').value, passengers: document.getElementById('passengers').value,
+                    startTime: document.getElementById('start_time').value, endTime: document.getElementById('end_time').value,
+                    applicantUnit: document.getElementById('applicant_unit').value, costCode: document.getElementById('cost_code').value,
+                    extension: document.getElementById('extension').value, contactGroup: document.getElementById('contact_group').value,
+                    applicantName: applicantName, managerName: managerName, remarks: document.getElementById('remarks').value,
+                    dispatchStatus: document.getElementById('dispatch_status').value, dispatchMethod: document.getElementById('dispatch_method').value,
+                    driverName: document.getElementById('driver_name').value, driverPhone: document.getElementById('driver_phone').value,
+                };
+
+                if (state.editingRequestId) {
+                    const index = state.requests.findIndex(r => r.id === state.editingRequestId);
+                    if (index > -1) { state.requests[index] = { ...state.requests[index], ...formData }; showAlert('申請單已更新！'); }
+                } else {
+                    formData.id = Date.now(); formData.dispatchStatus = '待處理'; state.requests.push(formData); showAlert('新申請已提交！');
+                }
+
+                saveRequests(); updateUI(); resetForm();
+            });
+
+            // --- INITIALIZATION ---
+            function init() { loadRequests(); setActiveTab('apply'); updateUI(); }
+            init();
+        });
+    </script>
+</body>
+</html>
+
