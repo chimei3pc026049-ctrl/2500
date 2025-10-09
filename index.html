@@ -3,47 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>奇美醫院派車申請系統 (雲端版)</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)" rel="stylesheet">
-    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js](https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js)"></script>
-    
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js](https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js)";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "[https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js](https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js)";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "[https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js](https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js)";
-      
-        // --- START: Firebase Configuration ---
-        // Use environment variables provided by the platform
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        // --- END: Firebase Configuration ---
-      
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // Sign in user
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            signInWithCustomToken(auth, __initial_auth_token).catch((error) => {
-                console.error("Custom token sign-in failed:", error);
-            });
-        } else {
-            signInAnonymously(auth).catch((error) => {
-                console.error("Anonymous sign-in failed:", error);
-            });
-        }
-        
-        // Make db and functions globally available
-        window.db = db; 
-        window.appId = appId;
-        window.firebase = { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp };
-      </script>
-
+    <title>奇美醫院派車申請系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
@@ -106,10 +70,6 @@
             color: #2563eb;
             border-bottom-color: #2563eb;
         }
-        #submit-btn:disabled {
-            background-color: #93c5fd;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -141,9 +101,9 @@
                         <div class="lg:col-span-3">
                             <label class="block text-sm font-medium text-gray-700">院區</label>
                             <div id="branch-options" class="mt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-base text-gray-700">
-                                 <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
-                                 <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
-                                 <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
                             </div>
                         </div>
                         <div><label for="reason" class="block text-sm font-medium text-gray-700">用車事由</label><input type="text" id="reason" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="標準化文件輔導顧問接送"></div>
@@ -210,7 +170,7 @@
                 <div id="admin-view">
                      <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">所有派車申請</h2>
                      <div id="requests-list" class="space-y-4">
-                        <!-- Requests will be injected here -->
+                         <!-- Requests will be injected here by Firestore -->
                      </div>
                 </div>
                  <div id="admin-login-prompt" class="text-center py-10">
@@ -228,25 +188,25 @@
                      </div>
 
                      <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 p-4 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-2">
-                            <label for="stats-month-filter" class="text-sm font-medium text-gray-700">篩選月份:</label>
-                            <input type="month" id="stats-month-filter" class="border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div class="flex gap-4 text-center">
-                            <div class="p-2">
-                                <p class="text-2xl font-bold text-blue-600" id="stats-total-requests">0</p>
-                                <p class="text-sm font-medium text-gray-500">總申請筆數</p>
-                            </div>
-                        </div>
-                    </div>
+                         <div class="flex items-center gap-2">
+                             <label for="stats-month-filter" class="text-sm font-medium text-gray-700">篩選月份:</label>
+                             <input type="month" id="stats-month-filter" class="border-gray-300 rounded-md shadow-sm p-2">
+                         </div>
+                         <div class="flex gap-4 text-center">
+                             <div class="p-2">
+                                 <p class="text-2xl font-bold text-blue-600" id="stats-total-requests">0</p>
+                                 <p class="text-sm font-medium text-gray-500">總申請筆數</p>
+                             </div>
+                         </div>
+                     </div>
 
                      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="p-4 border rounded-lg lg:col-span-2">
-                            <h3 class="text-center font-semibold mb-4 text-gray-700">各司機趟次統計</h3>
-                            <canvas id="driver-chart"></canvas>
-                        </div>
-                         <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">申請狀態分佈</h3><canvas id="status-chart"></canvas></div>
-                         <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">各院區申請量</h3><canvas id="branch-chart"></canvas></div>
+                         <div class="p-4 border rounded-lg lg:col-span-2">
+                             <h3 class="text-center font-semibold mb-4 text-gray-700">各司機趟次統計</h3>
+                             <canvas id="driver-chart"></canvas>
+                         </div>
+                          <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">申請狀態分佈</h3><canvas id="status-chart"></canvas></div>
+                          <div class="p-4 border rounded-lg"><h3 class="text-center font-semibold mb-4 text-gray-700">各院區申請量</h3><canvas id="branch-chart"></canvas></div>
                      </div>
                  </div>
                  <div id="stats-login-prompt" class="text-center py-10">
@@ -267,21 +227,23 @@
     </div>
 
     <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+
         window.addEventListener('load', () => {
             const state = {
                 isLoggedIn: false,
                 requests: [],
                 editingRequestId: null,
                 activeTab: 'apply',
+                db: null, // Firestore instance
+                auth: null, // Auth instance
             };
             
             let statusChartInstance, branchChartInstance, driverChartInstance;
-
-            const db = window.db;
-            const appId = window.appId;
-            const { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } = window.firebase;
-            const requestsCollectionPath = `/artifacts/${appId}/public/data/dispatchRequests`;
-            const requestsCollection = collection(db, requestsCollectionPath);
 
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
@@ -373,10 +335,10 @@
                 if (tabName === 'admin') updateAdminTabVisibility();
                 if (tabName === 'stats') { 
                     if (!statsMonthFilter.value) {
-                         const now = new Date();
-                         const year = now.getFullYear();
-                         const month = (now.getMonth() + 1).toString().padStart(2, '0');
-                         statsMonthFilter.value = `${year}-${month}`;
+                          const now = new Date();
+                          const year = now.getFullYear();
+                          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                          statsMonthFilter.value = `${year}-${month}`;
                     }
                     updateStatsTabVisibility(); 
                     renderStatistics(); 
@@ -445,12 +407,21 @@
             function renderAdminList() {
                 requestsList.innerHTML = '';
                 if(state.requests.length === 0) { requestsList.innerHTML = `<p class="text-center text-gray-500">目前沒有任何申請記錄。</p>`; return; }
-                [...state.requests].forEach(req => {
+                
+                // Sorting is now handled in the Firestore listener
+                state.requests.forEach(req => {
                     const card = document.createElement('div');
                     card.className = 'request-card p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3';
-                    card.innerHTML = `<div class="flex-grow"><p class="font-semibold text-gray-800">${req.applicantUnit} - ${req.applicantName}</p><p class="text-sm text-gray-500">事由: ${req.reason} | 時間: ${req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定'}</p></div><div class="flex items-center gap-4"><span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span><button class="text-sm text-blue-600 hover:text-blue-800 font-medium edit-btn">編輯</button><button class="text-sm text-red-600 hover:text-red-800 font-medium delete-btn">刪除</button></div>`;
+                    const startTime = req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定';
+                    card.innerHTML = `<div class="flex-grow"><p class="font-semibold text-gray-800">${req.applicantUnit} - ${req.applicantName}</p><p class="text-sm text-gray-500">事由: ${req.reason} | 時間: ${startTime}</p></div><div class="flex items-center gap-4"><span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span><button class="text-sm text-blue-600 hover:text-blue-800 font-medium edit-btn">編輯</button><button class="text-sm text-red-600 hover:text-red-800 font-medium delete-btn">刪除</button></div>`;
+                    
                     card.querySelector('.edit-btn').addEventListener('click', () => { loadRequestIntoForm(req.id); setActiveTab('apply'); });
-                    card.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); showConfirm(`確定要刪除由 ${req.applicantName} 提出的申請嗎？`, c => c && deleteRequest(req.id)); });
+                    card.querySelector('.delete-btn').addEventListener('click', (e) => { 
+                        e.stopPropagation(); 
+                        showConfirm(`確定要刪除由 ${req.applicantName} 提出的申請嗎？`, confirmed => {
+                            if (confirmed) deleteRequest(req.id);
+                        }); 
+                    });
                     requestsList.appendChild(card);
                 });
             }
@@ -458,19 +429,21 @@
             function handleSearch() {
                 const query = searchInput.value.trim();
                 if (!query) { searchResults.innerHTML = `<p class="text-center text-gray-500">請輸入姓名以查詢您的申請記錄。</p>`; return; }
-                const results = state.requests.filter(req => req.applicantName.includes(query));
+                const results = state.requests.filter(req => req.applicantName && req.applicantName.includes(query));
                 searchResults.innerHTML = '';
                 if (results.length === 0) { searchResults.innerHTML = `<p class="text-center text-gray-500">找不到符合「${query}」的申請記錄。</p>`; return; }
-                results.forEach(req => {
+                
+                results.forEach(req => { // Already sorted from Firestore
                     const card = document.createElement('div');
                     card.className = 'p-4 border rounded-lg bg-gray-50 space-y-2';
+                    const startTime = req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定';
                     card.innerHTML = `
                         <div class="flex justify-between items-center">
                             <p class="font-semibold text-gray-800">${req.applicantUnit} - ${req.applicantName}</p>
                             <span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span>
                         </div>
-                        <div class="text-sm text-gray-600 grid grid-cols-2 gap-x-4 gap-y-1">
-                            <p><strong>事由:</strong> ${req.reason}</p><p><strong>時間:</strong> ${req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定'}</p>
+                        <div class="text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                            <p><strong>事由:</strong> ${req.reason || '---'}</p><p><strong>時間:</strong> ${startTime}</p>
                             <p><strong>派車方式:</strong> ${req.dispatchMethod || '---'}</p><p><strong>備註:</strong> ${req.remarks || '---'}</p>
                             <p><strong>司機姓名:</strong> ${req.driverName || '---'}</p><p><strong>司機電話:</strong> ${req.driverPhone || '---'}</p>
                         </div>`;
@@ -483,7 +456,6 @@
                 
                 const filteredRequests = getFilteredRequests();
 
-                // Update key metrics
                 statsTotalRequests.textContent = filteredRequests.length;
                 
                 // Driver trips chart (horizontal bar)
@@ -544,9 +516,11 @@
                 // Branch Chart (Bar)
                 const branchCtx = document.getElementById('branch-chart').getContext('2d');
                 const branchCounts = filteredRequests.reduce((acc, req) => {
-                    req.branch.forEach(b => {
-                        acc[b] = (acc[b] || 0) + 1;
-                    });
+                    if (req.branch && Array.isArray(req.branch)) {
+                        req.branch.forEach(b => {
+                            acc[b] = (acc[b] || 0) + 1;
+                        });
+                    }
                     return acc;
                 }, {});
 
@@ -577,7 +551,7 @@
                     '申請人': req.applicantName,
                     '主管': req.managerName,
                     '用車事由': req.reason,
-                    '院區': req.branch.join(', '),
+                    '院區': req.branch ? req.branch.join(', ') : '',
                     '派車時間 (起)': req.startTime,
                     '派車時間 (迄)': req.endTime,
                     '派車方式': req.dispatchMethod,
@@ -594,20 +568,12 @@
 
 
             // --- FORM LOGIC ---
-            function resetForm() {
-                form.reset(); 
-                state.editingRequestId = null; 
-                requestIdInput.value = ''; 
-                submitBtn.textContent = '提交新申請';
-                submitBtn.disabled = false;
-                submitBtn.classList.replace('bg-green-600', 'bg-blue-600'); 
-                submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700'); 
-            }
+            function resetForm() { form.reset(); state.editingRequestId = null; requestIdInput.value = ''; submitBtn.textContent = '提交新申請'; submitBtn.classList.replace('bg-green-600', 'bg-blue-600'); submitBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700'); }
             
             function loadRequestIntoForm(id) {
                 const request = state.requests.find(r => r.id === id); if (!request) return;
                 state.editingRequestId = id; requestIdInput.value = id;
-                document.querySelectorAll('input[name="branch"]').forEach(cb => cb.checked = request.branch.includes(cb.value));
+                document.querySelectorAll('input[name="branch"]').forEach(cb => cb.checked = request.branch && request.branch.includes(cb.value));
                 
                 const fieldMapping = {
                     reason: request.reason, destination: request.destination, passengers: request.passengers, 
@@ -628,10 +594,84 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            async function deleteRequest(id) { 
-                await deleteDoc(doc(db, requestsCollectionPath, id));
-                resetForm(); 
+            async function deleteRequest(id) {
+                if (!id || !state.db) return;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', id);
+                try {
+                    await deleteDoc(docRef);
+                    showAlert('申請單已成功刪除。');
+                    resetForm(); // Reset form if the deleted item was being edited
+                } catch (error) {
+                    console.error("Error deleting document:", error);
+                    showAlert('刪除失敗，請稍後再試。', '錯誤');
+                }
             }
+            
+            // --- FIRESTORE & INITIALIZATION ---
+            function listenForRequests(appId) {
+                if (!state.db) return;
+                const requestsColRef = collection(state.db, 'artifacts', appId, 'public', 'data', 'requests');
+
+                onSnapshot(requestsColRef, (snapshot) => {
+                    state.requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    
+                    // Sort requests by createdAt timestamp, newest first
+                    state.requests.sort((a, b) => {
+                        const timeA = a.createdAt?.seconds || 0;
+                        const timeB = b.createdAt?.seconds || 0;
+                        return timeB - timeA;
+                    });
+                    
+                    // Re-render UI after getting new data
+                    updateUI();
+                    if(state.activeTab === 'search') { handleSearch(); }
+                    if(state.activeTab === 'stats' && state.isLoggedIn) { renderStatistics(); }
+
+                }, (error) => {
+                    console.error("Error listening for requests:", error);
+                    showAlert('無法讀取資料庫，請檢查網路連線或重新整理頁面。', '錯誤');
+                });
+            }
+
+            async function initFirebase() {
+                try {
+                    const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+                    const firebaseConfig = JSON.parse(firebaseConfigStr);
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                    if (!firebaseConfig.apiKey) {
+                        showAlert('系統設定錯誤，無法連接至資料庫。', '嚴重錯誤');
+                        console.error("Firebase config is missing or invalid.");
+                        return;
+                    }
+
+                    const app = initializeApp(firebaseConfig);
+                    state.db = getFirestore(app);
+                    state.auth = getAuth(app);
+                    setLogLevel('debug');
+
+                    onAuthStateChanged(state.auth, (user) => {
+                        if (user) {
+                            console.log("Authenticated successfully. User UID:", user.uid);
+                            listenForRequests(appId);
+                        } else {
+                            console.log("User is not authenticated.");
+                        }
+                    });
+
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) {
+                        await signInWithCustomToken(state.auth, token);
+                    } else {
+                        await signInAnonymously(state.auth);
+                    }
+                } catch (error) {
+                    console.error("Firebase Initialization Error:", error);
+                    showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤');
+                }
+            }
+
 
             // --- EVENT LISTENERS ---
             authBtn.addEventListener('click', () => { state.isLoggedIn ? logout() : promptLogin(); });
@@ -652,62 +692,52 @@
                 const managerName = document.getElementById('manager_name').value;
                 if (!applicantName || !managerName) { showAlert('請填寫申請人及主管姓名！', '資料不完整'); return; }
 
-                const originalBtnText = submitBtn.textContent;
+                const formData = {
+                    branch: Array.from(document.querySelectorAll('input[name="branch"]:checked')).map(cb => cb.value),
+                    reason: document.getElementById('reason').value, vehicleType: document.querySelector('input[name="vehicle_type"]:checked')?.value || null,
+                    destination: document.getElementById('destination').value, passengers: document.getElementById('passengers').value,
+                    startTime: document.getElementById('start_time').value, endTime: document.getElementById('end_time').value,
+                    applicantUnit: document.getElementById('applicant_unit').value, costCode: document.getElementById('cost_code').value,
+                    extension: document.getElementById('extension').value, contactGroup: document.getElementById('contact_group').value,
+                    applicantName: applicantName, managerName: managerName, remarks: document.getElementById('remarks').value,
+                    dispatchStatus: document.getElementById('dispatch_status').value, dispatchMethod: document.getElementById('dispatch_method').value,
+                    driverName: document.getElementById('driver_name').value, driverPhone: document.getElementById('driver_phone').value,
+                };
+                
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 submitBtn.disabled = true;
                 submitBtn.textContent = '處理中...';
-
+                
                 try {
-                    const formData = {
-                        branch: Array.from(document.querySelectorAll('input[name="branch"]:checked')).map(cb => cb.value),
-                        reason: document.getElementById('reason').value, vehicleType: document.querySelector('input[name="vehicle_type"]:checked')?.value || null,
-                        destination: document.getElementById('destination').value, passengers: document.getElementById('passengers').value,
-                        startTime: document.getElementById('start_time').value, endTime: document.getElementById('end_time').value,
-                        applicantUnit: document.getElementById('applicant_unit').value, costCode: document.getElementById('cost_code').value,
-                        extension: document.getElementById('extension').value, contactGroup: document.getElementById('contact_group').value,
-                        applicantName: applicantName, managerName: managerName, remarks: document.getElementById('remarks').value,
-                        dispatchStatus: document.getElementById('dispatch_status').value, dispatchMethod: document.getElementById('dispatch_method').value,
-                        driverName: document.getElementById('driver_name').value, driverPhone: document.getElementById('driver_phone').value,
-                    };
-
                     if (state.editingRequestId) {
-                        const docRef = doc(db, requestsCollectionPath, state.editingRequestId);
+                        const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', state.editingRequestId);
                         await updateDoc(docRef, formData);
-                        showAlert('申請單更新成功！');
+                        showAlert('申請單已更新！');
                     } else {
-                        formData.createdAt = serverTimestamp();
                         formData.dispatchStatus = '待處理';
-                        await addDoc(requestsCollection, formData);
-                        showAlert('申請完成 請靜候管理單位處理');
+                        formData.createdAt = serverTimestamp(); // Add timestamp for sorting
+                        const requestsColRef = collection(state.db, 'artifacts', appId, 'public', 'data', 'requests');
+                        await addDoc(requestsColRef, formData);
+                        showAlert('申請已成功送出！');
                     }
                     resetForm();
-                } catch (error) {
-                    console.error("Error submitting form: ", error);
-                    showAlert('提交失敗，請檢查網路連線並重試。', '錯誤');
+                } catch(error) {
+                    console.error("Form submission error: ", error);
+                    showAlert('提交失敗，請稍後再試。', '錯誤');
+                } finally {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText;
+                    // Button text is handled by resetForm or the next onSnapshot update
                 }
             });
 
-            // --- INITIALIZATION ---
-            function init() {
-                const q = query(requestsCollection, orderBy("createdAt", "desc"));
-                onSnapshot(q, (snapshot) => {
-                    state.requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    updateUI();
-                    if(state.activeTab === 'stats' && state.isLoggedIn){
-                        renderStatistics();
-                    }
-                }, (error) => {
-                    console.error("Error fetching data from Firestore: ", error);
-                    showAlert("無法從雲端讀取資料，請檢查您的網路連線或稍後再試。", "連線錯誤");
-                });
-                
+            // --- KICKSTART THE APP ---
+            function init() { 
+                initFirebase(); // Start the Firebase connection
                 setActiveTab('apply'); 
-                updateUI(); 
+                updateUI();
             }
             init();
         });
     </script>
 </body>
 </html>
-
