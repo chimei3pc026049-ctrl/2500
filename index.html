@@ -256,6 +256,7 @@
                 db: null, // Firestore instance
                 auth: null, // Auth instance
                 deepLinkedRequestId: null,
+                appId: null, // App ID for Firestore path
             };
             
             let statusChartInstance, branchChartInstance, driverChartInstance;
@@ -501,7 +502,7 @@
                 if (!id || !state.db) return;
                 promptManagerName(async (managerName) => {
                     if (managerName) {
-                        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                        const appId = state.appId;
                         const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', id);
                         try {
                             await updateDoc(docRef, { 
@@ -703,7 +704,7 @@
 
             async function deleteRequest(id) {
                 if (!id || !state.db) return;
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const appId = state.appId;
                 const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', id);
                 try {
                     await deleteDoc(docRef);
@@ -758,34 +759,67 @@
 
             async function initFirebase() {
                 try {
-                    const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-                    const firebaseConfig = JSON.parse(firebaseConfigStr);
-                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                    if (!firebaseConfig.apiKey) {
-                        showAlert('系統設定檔遺失或無效，因此無法連接到雲端資料庫。請確認應用程式是否在正確的環境中執行。部分功能將會停用。', '資料庫連線失敗');
-                        console.error("Firebase config is missing or invalid (__firebase_config). App will run in a disabled state.");
+                     // =================================================================
+                    // --- Firebase 設定 (Github Pages 或其他靜態網站託管適用) ---
+                    // =================================================================
+                    // 請將您自己的 Firebase 專案設定貼到下面的 firebaseConfig 物件中。
+                    // 您可以在 Firebase 控制台 -> 專案設定 -> 一般 -> 您的應用程式 -> SDK 設定和設定 -> 設定，找到這段程式碼。
+                    // !! 重要 !! 請用您自己的設定取代下面的預留位置 !!
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyAaF0b3-C8v_uaed0XtFKfWC7ElFNrrshc",
+                        authDomain:  "carforms-dc898.firebaseapp.com",
+                        projectId: "carforms-dc898",
+                        storageBucket:  "carforms-dc898.firebasestorage.app",
+                        messagingSenderId: "G-BEPLKT1SNJ",
+                        appId: "1:1098158902069:web:ad2b2144e7c64184051a7c"
+                    };
+                    
+                    // 這個 appId 用來區分不同應用程式的資料，您可以自訂一個獨一無二的名稱。
+                    const appId = 'chi-mei-dispatch-system-gihub'; 
+                    // =================================================================
+
+                    // 檢查是否為特殊環境 (例如 Canvas)，如果是，則優先使用環境變數。
+                    const envConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+                    const finalConfig = envConfigStr ? JSON.parse(envConfigStr) : firebaseConfig;
+                    state.appId = typeof __app_id !== 'undefined' ? __app_id : appId;
+                    
+                    if (!finalConfig.apiKey || finalConfig.apiKey.startsWith("請貼上")) {
+                        showAlert('Firebase 設定不正確，因此無法連接到雲端資料庫。請檢查程式碼中的 firebaseConfig 物件是否已填入您自己的專案金鑰。', '資料庫連線失敗');
+                        console.error("Firebase config is missing or invalid. Please update the firebaseConfig object in the script.");
                         submitBtn.disabled = true; submitBtn.textContent = '資料庫未連接'; submitBtn.classList.add('cursor-not-allowed', 'bg-gray-400', 'hover:bg-gray-400'); submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                         searchBtn.disabled = true; searchInput.disabled = true; searchInput.placeholder = '資料庫未連接';
                         const adminTabBtn = document.querySelector('button[data-tab="admin"]'); if (adminTabBtn) adminTabBtn.disabled = true;
                         if (statsTabBtn) statsTabBtn.disabled = true; 
                         return;
                     }
-                    const app = initializeApp(firebaseConfig);
+
+                    const app = initializeApp(finalConfig);
                     state.db = getFirestore(app);
                     state.auth = getAuth(app);
                     setLogLevel('debug');
+
                     onAuthStateChanged(state.auth, (user) => {
-                        if (user) { console.log("Authenticated successfully. User UID:", user.uid); listenForRequests(appId); } 
-                        else { console.log("User is not authenticated."); }
+                        if (user) { 
+                            console.log("Authenticated successfully. User UID:", user.uid); 
+                            listenForRequests(state.appId); 
+                        } 
+                        else { 
+                            console.log("User is not authenticated."); 
+                        }
                     });
+
                     const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) { await signInWithCustomToken(state.auth, token); } 
-                    else { await signInAnonymously(state.auth); }
+                    if (token) { 
+                        await signInWithCustomToken(state.auth, token); 
+                    } else { 
+                        await signInAnonymously(state.auth); 
+                    }
                 } catch (error) {
                     console.error("Firebase Initialization Error:", error);
                     showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤');
                 }
             }
+
 
             // --- EVENT LISTENERS ---
             authBtn.addEventListener('click', () => { state.isLoggedIn ? logout() : promptLogin(); });
@@ -803,7 +837,7 @@
                 const applicantName = document.getElementById('applicant_name').value;
                 if (!applicantName) { showAlert('請填寫申請人姓名！', '資料不完整'); return; }
                 
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const appId = state.appId;
                 submitBtn.disabled = true;
                 submitBtn.textContent = '處理中...';
 
