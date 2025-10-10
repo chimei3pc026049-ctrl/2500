@@ -871,9 +871,9 @@
                     }
                 } catch(error) {
                     console.error("Form submission error: ", error);
-                    showAlert('提交失敗，請稍後再試。', '錯誤');
-                } finally {
-                    // Button state is handled by resetForm or success modals
+                    showAlert('提交失敗，請檢查您的網路連線或資料庫權限設定。', '錯誤');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = state.editingRequestId ? '更新處理進度' : '提交新申請';
                 }
             });
 
