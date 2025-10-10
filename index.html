@@ -523,7 +523,7 @@
                 state.requests.forEach(req => {
                     const card = document.createElement('div');
                     card.className = 'request-card p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3';
-                    const startTime = req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定';
+                    const createdAt = req.createdAt?.toDate() ? req.createdAt.toDate().toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : 'N/A';
                     
                     let buttonsHTML = '';
                     if (req.dispatchStatus === '待申請單位主管簽核') {
@@ -532,7 +532,10 @@
                     buttonsHTML += `<button class="text-sm text-blue-600 hover:text-blue-800 font-medium edit-btn">檢視/編輯</button>`;
                     buttonsHTML += `<button class="text-sm text-red-600 hover:text-red-800 font-medium delete-btn">刪除</button>`;
 
-                    card.innerHTML = `<div class="flex-grow"><p class="font-semibold text-gray-800">${req.applicantUnit || 'N/A'} - ${req.applicantName || 'N/A'}</p><p class="text-sm text-gray-500">事由: ${req.reason} | 時間: ${startTime}</p></div><div class="flex items-center flex-shrink-0 gap-4">${buttonsHTML} <span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span></div>`;
+                    card.innerHTML = `<div class="flex-grow">
+                        <p class="font-semibold text-gray-800">${req.applicantUnit || 'N/A'} - ${req.applicantName || 'N/A'}</p>
+                        <p class="text-sm text-gray-500">申請時間: ${createdAt}</p>
+                    </div><div class="flex items-center flex-shrink-0 gap-4">${buttonsHTML} <span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span></div>`;
                     
                     const approveBtn = card.querySelector('.approve-btn');
                     if (approveBtn) {
@@ -561,6 +564,7 @@
                     const card = document.createElement('div');
                     card.className = 'p-4 border rounded-lg bg-gray-50 space-y-2';
                     const startTime = req.startTime ? new Date(req.startTime).toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : '未指定';
+                    const createdAt = req.createdAt?.toDate() ? req.createdAt.toDate().toLocaleString('zh-TW', { hour12: false }).slice(0, 16) : 'N/A';
                     
                     let managerActionsHTML = '';
                     if (req.dispatchStatus === '待申請單位主管簽核') {
@@ -573,7 +577,9 @@
                             <span class="status-badge ${getStatusBadgeClass(req.dispatchStatus)}">${req.dispatchStatus}</span>
                         </div>
                         <div class="text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
-                            <p><strong>事由:</strong> ${req.reason || '---'}</p><p><strong>時間:</strong> ${startTime}</p>
+                            <p><strong>申請時間:</strong> ${createdAt}</p>
+                            <p><strong>預定用車:</strong> ${startTime}</p>
+                            <p class="sm:col-span-2"><strong>事由:</strong> ${req.reason || '---'}</p>
                             ${req.approvingManager ? `<p><strong>簽核主管:</strong> ${req.approvingManager}</p>` : ''}
                             <p><strong>派車方式:</strong> ${req.dispatchMethod || '---'}</p>
                             <p><strong>司機姓名:</strong> ${req.driverName || '---'}</p><p><strong>司機電話:</strong> ${req.driverPhone || '---'}</p>
@@ -627,7 +633,7 @@
             // --- EXCEL EXPORT ---
             function exportToExcel() {
                 const filteredRequests = getFilteredRequests();
-                const dataToExport = filteredRequests.map(req => ({'申請單號': req.id, '申請狀態': req.dispatchStatus, '申請單位': req.applicantUnit, '申請人': req.applicantName, '簽核主管': req.approvingManager, '用車事由': req.reason, '院區': req.branch ? req.branch.join(', ') : '', '派車時間 (起)': req.startTime, '派車時間 (迄)': req.endTime, '派車方式': req.dispatchMethod, '司機姓名': req.driverName, '司機電話': req.driverPhone, '申請備註': req.remarks, '承辦備註': req.adminRemarks }));
+                const dataToExport = filteredRequests.map(req => ({'申請單號': req.id, '申請時間': req.createdAt?.toDate()?.toLocaleString('zh-TW') || '', '申請狀態': req.dispatchStatus, '申請單位': req.applicantUnit, '申請人': req.applicantName, '簽核主管': req.approvingManager, '用車事由': req.reason, '院區': req.branch ? req.branch.join(', ') : '', '派車時間 (起)': req.startTime, '派車時間 (迄)': req.endTime, '派車方式': req.dispatchMethod, '司機姓名': req.driverName, '司機電話': req.driverPhone, '申請備註': req.remarks, '承辦備註': req.adminRemarks }));
                 const worksheet = XLSX.utils.json_to_sheet(dataToExport);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, '派車申請單');
@@ -868,10 +874,4 @@
     </script>
 </body>
 </html>
-" of the Canvas and want to make a change to it.
-I want to make a change to this Canvas.
-Here are the changes I want to make:
-儲存時要一同儲存申請時間
-
-(this is a rough translation of my query, the user wants to save the application time when saving the form)
 
