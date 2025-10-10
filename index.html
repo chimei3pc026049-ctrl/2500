@@ -188,7 +188,14 @@
             <div id="tab-content-admin" class="tab-content hidden bg-white p-6 sm:p-8 rounded-b-2xl shadow-lg">
                 <div id="admin-view">
                      <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b pb-4 gap-4">
-                        <h2 class="text-xl font-bold text-gray-800">所有派車申請</h2>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xl font-bold text-gray-800">所有派車申請</h2>
+                            <button id="refresh-admin-list-btn" title="重新整理" class="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <svg class="w-5 h-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.691V5.25a8.25 8.25 0 00-11.664 0v4.992m11.664 0l-3.181-3.183" />
+                                </svg>
+                            </button>
+                        </div>
                         <div class="flex items-center space-x-2">
                              <input type="text" id="admin-search-input" placeholder="依申請單號查詢..." class="w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         </div>
@@ -293,6 +300,7 @@
             const searchBtn = document.getElementById('search-btn');
             const searchResults = document.getElementById('search-results');
             const adminSearchInput = document.getElementById('admin-search-input');
+            const refreshAdminListBtn = document.getElementById('refresh-admin-list-btn');
 
             const statsTabBtn = document.querySelector('button[data-tab="stats"]');
             const statsView = document.getElementById('stats-view');
@@ -865,6 +873,18 @@
             searchBtn.addEventListener('click', handleSearch);
             searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSearch(); });
             adminSearchInput.addEventListener('input', renderAdminList);
+            refreshAdminListBtn.addEventListener('click', () => {
+                const icon = refreshAdminListBtn.querySelector('svg');
+                if (icon) {
+                    icon.classList.add('animate-spin');
+                }
+                renderAdminList(); 
+                setTimeout(() => {
+                    if (icon) {
+                        icon.classList.remove('animate-spin');
+                    }
+                }, 700);
+            });
 
 
             form.addEventListener('submit', async (e) => {
@@ -960,4 +980,5 @@
     </script>
 </body>
 </html>
+
 
