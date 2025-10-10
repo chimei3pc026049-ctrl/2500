@@ -56,10 +56,7 @@
         }
 
         .tab-btn {
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #4b5563;
+            padding: 0.75rem 1rem;
             border-bottom: 2px solid transparent;
             transition: all 0.2s ease;
             position: relative;
@@ -78,21 +75,20 @@
         <!-- Header -->
         <header class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-4">
-                <img src="chi_mei_hospital_Chiali_blue.png" alt="奇美醫院 Logo" class="h-20">
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">派車申請系統</h1>
+                <img src="chi_mei_hospital_Chiali_blue.png" alt="奇美醫院 Logo" class="h-12 sm:h-16">
+                <h1 class="text-xl sm:text-3xl font-bold text-gray-800">派車申請系統</h1>
             </div>
-            <button id="auth-btn" class="py-2 px-4 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">管理員登入</button>
         </header>
 
         <!-- Tab Navigation -->
-        <nav class="flex border-b border-gray-200 bg-white rounded-t-lg">
-            <button data-tab="apply" class="tab-btn active">填寫申請</button>
-            <button data-tab="search" class="tab-btn">查詢狀態</button>
-            <button data-tab="admin" class="tab-btn flex items-center">
+        <nav class="flex flex-wrap border-b border-gray-200 bg-white rounded-t-lg">
+            <button data-tab="apply" class="tab-btn active text-sm sm:text-base font-medium">填寫申請</button>
+            <button data-tab="search" class="tab-btn text-sm sm:text-base font-medium">查詢狀態</button>
+            <button data-tab="admin" class="tab-btn flex items-center text-sm sm:text-base font-medium">
                 管理後台
-                <span id="pending-count" class="ml-2 bg-red-600 text-white text-sm font-bold px-2.5 py-1 rounded-full hidden"></span>
+                <span id="pending-count" class="ml-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"></span>
             </button>
-            <button data-tab="stats" class="tab-btn hidden">統計分析</button>
+            <button data-tab="stats" class="tab-btn hidden text-sm sm:text-base font-medium">統計分析</button>
         </nav>
 
         <main>
@@ -104,14 +100,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 border-t border-b border-gray-200 py-6">
                         <div class="lg:col-span-3">
                             <label class="block text-sm font-medium text-gray-700">院區</label>
-                            <div id="branch-options" class="mt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-base text-gray-700">
+                            <div id="branch-options" class="mt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-sm sm:text-base text-gray-700">
                                   <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
                                   <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
                                   <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
                             </div>
                         </div>
                         <div><label for="reason" class="block text-sm font-medium text-gray-700">用車事由</label><input type="text" id="reason" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value=""></div>
-                        <div><label class="block text-sm font-medium text-gray-700">車輛種類</label><div class="mt-2 flex items-center space-x-6"><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="中巴" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>中巴</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="小客" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>小客</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="其他" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>其他</span></label></div></div>
+                        <div><label class="block text-sm font-medium text-gray-700">車輛種類</label><div class="mt-2 flex items-center space-x-6 text-sm sm:text-base"><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="中巴" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>中巴</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="小客" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>小客</span></label><label class="flex items-center space-x-2"><input type="radio" name="vehicle_type" value="其他" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"><span>其他</span></label></div></div>
                         <div><label for="destination" class="block text-sm font-medium text-gray-700">駛達地點</label><input type="text" id="destination" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value=""></div>
                         <div><label for="passengers" class="block text-sm font-medium text-gray-700">搭乘人數</label><input type="number" id="passengers" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value=""></div>
                         <div><label for="start_time" class="block text-sm font-medium text-gray-700">預定派車時間 (起)</label><input type="datetime-local" id="start_time" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
@@ -185,7 +181,10 @@
             <!-- Admin Tab -->
             <div id="tab-content-admin" class="tab-content hidden bg-white p-6 sm:p-8 rounded-b-2xl shadow-lg">
                 <div id="admin-view">
-                     <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">所有派車申請</h2>
+                     <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h2 class="text-xl font-bold text-gray-800">所有派車申請</h2>
+                        <button id="logout-btn" class="hidden py-2 px-4 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">登出</button>
+                     </div>
                      <div id="requests-list" class="space-y-4">
                          <!-- Requests will be injected here by Firestore -->
                      </div>
@@ -265,7 +264,7 @@
 
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
-            const authBtn = document.getElementById('auth-btn');
+            const logoutBtn = document.getElementById('logout-btn');
             const submitBtn = document.getElementById('submit-btn');
             const clearBtn = document.getElementById('clear-btn');
             const requestIdInput = document.getElementById('request-id');
@@ -450,9 +449,8 @@
 
             function updateUI() {
                 if (state.isLoggedIn) {
-                    authBtn.textContent = '登出 (管理員)';
-                    authBtn.classList.replace('bg-white', 'bg-green-600'); authBtn.classList.replace('hover:bg-gray-50', 'hover:bg-green-700'); authBtn.classList.add('text-white');
                     statsTabBtn.classList.remove('hidden');
+                    if (logoutBtn) logoutBtn.classList.remove('hidden');
 
                     const pendingCount = state.requests.filter(r => r.dispatchStatus === '待管理單位處理').length;
                     if(pendingCount > 0) {
@@ -464,9 +462,8 @@
                         pendingCountBadge.classList.remove('animate-pulse-badge');
                     }
                 } else {
-                    authBtn.textContent = '管理員登入';
-                    authBtn.classList.replace('bg-green-600', 'bg-white'); authBtn.classList.replace('hover:bg-green-700', 'hover:bg-gray-50'); authBtn.classList.remove('text-white');
                     statsTabBtn.classList.add('hidden');
+                    if (logoutBtn) logoutBtn.classList.add('hidden');
                     pendingCountBadge.classList.add('hidden');
                 }
                 updateAdminTabVisibility();
@@ -814,7 +811,7 @@
 
 
             // --- EVENT LISTENERS ---
-            authBtn.addEventListener('click', () => { state.isLoggedIn ? logout() : promptLogin(); });
+            logoutBtn.addEventListener('click', logout);
             adminLoginPromptBtn.addEventListener('click', promptLogin);
             statsLoginPromptBtn.addEventListener('click', promptLogin);
             exportExcelBtn.addEventListener('click', exportToExcel);
@@ -880,3 +877,4 @@
     </script>
 </body>
 </html>
+
