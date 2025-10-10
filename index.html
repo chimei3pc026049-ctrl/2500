@@ -256,7 +256,6 @@
                 db: null, // Firestore instance
                 auth: null, // Auth instance
                 deepLinkedRequestId: null,
-                appId: null, // App ID for Firestore path
             };
             
             let statusChartInstance, branchChartInstance, driverChartInstance;
@@ -502,8 +501,7 @@
                 if (!id || !state.db) return;
                 promptManagerName(async (managerName) => {
                     if (managerName) {
-                        const appId = state.appId;
-                        const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', id);
+                        const docRef = doc(state.db, 'requests', id);
                         try {
                             await updateDoc(docRef, { 
                                 dispatchStatus: '待管理單位處理',
@@ -704,8 +702,7 @@
 
             async function deleteRequest(id) {
                 if (!id || !state.db) return;
-                const appId = state.appId;
-                const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', id);
+                const docRef = doc(state.db, 'requests', id);
                 try {
                     await deleteDoc(docRef);
                     showAlert('申請單已成功刪除。');
@@ -717,9 +714,9 @@
             }
             
             // --- FIRESTORE & INITIALIZATION ---
-            function listenForRequests(appId) {
+            function listenForRequests() {
                 if (!state.db) return;
-                const requestsColRef = collection(state.db, 'artifacts', appId, 'public', 'data', 'requests');
+                const requestsColRef = collection(state.db, 'requests');
                 onSnapshot(requestsColRef, (snapshot) => {
                     state.requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     state.requests.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
@@ -759,11 +756,6 @@
 
             async function initFirebase() {
                 try {
-                     // =================================================================
-                    // --- Firebase 設定 (Github Pages 或其他靜態網站託管適用) ---
-                    // =================================================================
-                    // 請將您自己的 Firebase 專案設定貼到下面的 firebaseConfig 物件中。
-                    // 您可以在 Firebase 控制台 -> 專案設定 -> 一般 -> 您的應用程式 -> SDK 設定和設定 -> 設定，找到這段程式碼。
                     const firebaseConfig = {
                         apiKey: "AIzaSyAaF0b3-C8v_uaed0XtFKfWC7ElFNrrshc",
                         authDomain: "carforms-dc898.firebaseapp.com",
@@ -774,18 +766,9 @@
                         measurementId: "G-BEPLKT1SNJ"
                     };
                     
-                    // 這個 appId 用來區分不同應用程式的資料，您可以自訂一個獨一無二的名稱。
-                    const appId = 'chi-mei-dispatch-system-gihub'; 
-                    // =================================================================
-
-                    // 檢查是否為特殊環境 (例如 Canvas)，如果是，則優先使用環境變數。
-                    const envConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-                    const finalConfig = envConfigStr ? JSON.parse(envConfigStr) : firebaseConfig;
-                    state.appId = typeof __app_id !== 'undefined' ? __app_id : appId;
-                    
-                    if (!finalConfig.apiKey || finalConfig.apiKey.startsWith("請貼上")) {
-                        showAlert('Firebase 設定不正確，因此無法連接到雲端資料庫。請檢查程式碼中的 firebaseConfig 物件是否已填入您自己的專案金鑰。', '資料庫連線失敗');
-                        console.error("Firebase config is missing or invalid. Please update the firebaseConfig object in the script.");
+                    if (!firebaseConfig.apiKey) {
+                        showAlert('Firebase 設定不正確，因此無法連接到雲端資料庫。', '資料庫連線失敗');
+                        console.error("Firebase config is missing or invalid.");
                         submitBtn.disabled = true; submitBtn.textContent = '資料庫未連接'; submitBtn.classList.add('cursor-not-allowed', 'bg-gray-400', 'hover:bg-gray-400'); submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                         searchBtn.disabled = true; searchInput.disabled = true; searchInput.placeholder = '資料庫未連接';
                         const adminTabBtn = document.querySelector('button[data-tab="admin"]'); if (adminTabBtn) adminTabBtn.disabled = true;
@@ -793,7 +776,7 @@
                         return;
                     }
 
-                    const app = initializeApp(finalConfig);
+                    const app = initializeApp(firebaseConfig);
                     state.db = getFirestore(app);
                     state.auth = getAuth(app);
                     setLogLevel('debug');
@@ -801,19 +784,16 @@
                     onAuthStateChanged(state.auth, (user) => {
                         if (user) { 
                             console.log("Authenticated successfully. User UID:", user.uid); 
-                            listenForRequests(state.appId); 
+                            listenForRequests(); 
                         } 
                         else { 
                             console.log("User is not authenticated."); 
                         }
                     });
 
-                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) { 
-                        await signInWithCustomToken(state.auth, token); 
-                    } else { 
-                        await signInAnonymously(state.auth); 
-                    }
+                    // For standalone apps, anonymous sign-in is usually sufficient.
+                    await signInAnonymously(state.auth); 
+
                 } catch (error) {
                     console.error("Firebase Initialization Error:", error);
                     showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤');
@@ -837,7 +817,6 @@
                 const applicantName = document.getElementById('applicant_name').value;
                 if (!applicantName) { showAlert('請填寫申請人姓名！', '資料不完整'); return; }
                 
-                const appId = state.appId;
                 submitBtn.disabled = true;
                 submitBtn.textContent = '處理中...';
 
@@ -851,14 +830,14 @@
                             driverPhone: document.getElementById('driver_phone').value,
                             adminRemarks: document.getElementById('admin_remarks').value,
                         };
-                        const docRef = doc(state.db, 'artifacts', appId, 'public', 'data', 'requests', state.editingRequestId);
+                        const docRef = doc(state.db, 'requests', state.editingRequestId);
                         await updateDoc(docRef, formData);
                         showAlert('申請單已更新！');
                         resetForm();
                     } else {
                         // Handle new application
                         const formData = { branch: Array.from(document.querySelectorAll('input[name="branch"]:checked')).map(cb => cb.value), reason: document.getElementById('reason').value, vehicleType: document.querySelector('input[name="vehicle_type"]:checked')?.value || null, destination: document.getElementById('destination').value, passengers: document.getElementById('passengers').value, startTime: document.getElementById('start_time').value, endTime: document.getElementById('end_time').value, applicantUnit: document.getElementById('applicant_unit').value, costCode: document.getElementById('cost_code').value, extension: document.getElementById('extension').value, contactGroup: document.getElementById('contact_group').value, applicantName: applicantName, remarks: document.getElementById('remarks').value, approvingManager: '', dispatchStatus: '待申請單位主管簽核', dispatchMethod: '', driverName: '', driverPhone: '', adminRemarks: '', createdAt: serverTimestamp() };
-                        const requestsColRef = collection(state.db, 'artifacts', appId, 'public', 'data', 'requests');
+                        const requestsColRef = collection(state.db, 'requests');
                         const newDocRef = await addDoc(requestsColRef, formData);
                         
                         const approvalLink = `${window.location.origin}${window.location.pathname}?requestId=${newDocRef.id}`;
@@ -889,4 +868,10 @@
     </script>
 </body>
 </html>
+" of the Canvas and want to make a change to it.
+I want to make a change to this Canvas.
+Here are the changes I want to make:
+儲存時要一同儲存申請時間
+
+(this is a rough translation of my query, the user wants to save the application time when saving the form)
 
