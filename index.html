@@ -76,7 +76,7 @@
         <!-- Header -->
         <header class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-4">
-                <img src="chi_mei_hospital_Chiali_blue.png" alt="奇美醫院 Logo" class="h-12 sm:h-16">
+                <img src="https://www.chimei.org.tw/main/cmh__file/main_site/logo/logo.svg" alt="奇美醫院 Logo" class="h-12 sm:h-16">
                 <h1 class="text-xl sm:text-3xl font-bold text-gray-800">派車申請系統</h1>
             </div>
         </header>
@@ -891,21 +891,19 @@
                         resetForm();
                     } else {
                         // Handle new application
-                        const costCode = document.getElementById('cost_code').value || 'NA';
                         const today = new Date();
                         const yyyy = today.getFullYear();
                         const mm = String(today.getMonth() + 1).padStart(2, '0');
-                        const dd = String(today.getDate()).padStart(2, '0');
-                        const datePrefix = `${yyyy}${mm}${dd}`;
+                        const datePrefix = `${yyyy}${mm}`;
 
                         const requestsColRef = collection(state.db, 'requests');
                         const q = query(requestsColRef, 
-                            where("requestId", ">=", `${datePrefix}-${costCode}-`),
-                            where("requestId", "<", `${datePrefix}-${costCode}-~`)
+                            where("requestId", ">=", `${datePrefix}-`),
+                            where("requestId", "<", `${datePrefix}-~`)
                         );
                         const querySnapshot = await getDocs(q);
                         const newSeq = String(querySnapshot.size + 1).padStart(3, '0');
-                        const newRequestId = `${datePrefix}-${costCode}-${newSeq}`;
+                        const newRequestId = `${datePrefix}-${newSeq}`;
                         
                         const formData = { 
                             requestId: newRequestId,
@@ -917,7 +915,7 @@
                             startTime: document.getElementById('start_time').value, 
                             endTime: document.getElementById('end_time').value, 
                             applicantUnit: document.getElementById('applicant_unit').value, 
-                            costCode: costCode, 
+                            costCode: document.getElementById('cost_code').value, 
                             extension: document.getElementById('extension').value, 
                             contactGroup: document.getElementById('contact_group').value, 
                             applicantName: applicantName, 
