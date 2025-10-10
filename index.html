@@ -77,7 +77,10 @@
     <div class="w-full max-w-5xl mx-auto p-4 sm:p-6">
         <!-- Header -->
         <header class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">佳里奇美醫院派車申請系統</h1>
+            <div class="flex items-center gap-4">
+                <img src="chi_mei_hospital_Chiali_blue.png" alt="奇美醫院 Logo" class="h-10">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">派車申請系統</h1>
+            </div>
             <button id="auth-btn" class="py-2 px-4 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">管理員登入</button>
         </header>
 
@@ -579,6 +582,9 @@
                         <div class="text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
                             <p><strong>申請時間:</strong> ${createdAt}</p>
                             <p><strong>預定用車:</strong> ${startTime}</p>
+                            <p><strong>車輛種類:</strong> ${req.vehicleType || '---'}</p>
+                            <p><strong>搭乘人數:</strong> ${req.passengers || '---'} 人</p>
+                            <p class="sm:col-span-2"><strong>駛達地點:</strong> ${req.destination || '---'}</p>
                             <p class="sm:col-span-2"><strong>事由:</strong> ${req.reason || '---'}</p>
                             ${req.approvingManager ? `<p><strong>簽核主管:</strong> ${req.approvingManager}</p>` : ''}
                             <p><strong>派車方式:</strong> ${req.dispatchMethod || '---'}</p>
@@ -874,4 +880,3 @@
     </script>
 </body>
 </html>
-
