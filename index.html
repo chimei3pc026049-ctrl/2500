@@ -362,7 +362,7 @@
                 const loginBtn = document.getElementById('modal-login-btn'), cancelBtn = document.getElementById('modal-cancel-btn'), usernameInput = document.getElementById('modal-username'), passwordInput = document.getElementById('modal-password'), errorEl = document.getElementById('modal-error');
                 usernameInput.focus();
                 const handleLogin = () => {
-                    if (usernameInput.value === 'admin' && passwordInput.value === 'admin') {
+                    if (usernameInput.value === 'admin' && passwordInput.value === 'cch2500') {
                         hideModal(); state.isLoggedIn = true; showAlert('登入成功！'); updateUI(); setActiveTab('admin');
                     } else {
                         errorEl.textContent = '帳號或密碼錯誤！'; const modalBox = modal.querySelector('div'); modalBox.classList.add('animate-shake'); setTimeout(() => { modalBox.classList.remove('animate-shake'); }, 500);
