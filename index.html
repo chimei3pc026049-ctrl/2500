@@ -216,7 +216,7 @@
                  <div id="admin-login-prompt" class="text-center py-10">
                     <p class="text-gray-600">此為管理員專區，請先登入。</p>
                     <button id="admin-login-prompt-btn" class="mt-4 py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700">立即登入</button>
-                </div>
+                 </div>
             </div>
 
             <!-- Stats Tab -->
@@ -332,9 +332,16 @@
             const modalButtons = document.getElementById('modal-buttons');
 
             function hideModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
-            function showAlert(message, title = '通知') { 
+            function showAlert(message, title = '通知', consoleError) { 
                 modalTitle.textContent = title;
-                modalContent.innerHTML = `<p>${message}</p>`;
+                let fullMessage = `<p>${message}</p>`;
+                if (consoleError) {
+                    // Optional: Show more detail in console if an error object is passed
+                    fullMessage += `<p class="text-xs text-red-500 mt-2">請查看瀏覽器 Console 取得更多錯誤細節。</p>`;
+                    console.error("Alert Triggered with Error:", consoleError);
+                }
+
+                modalContent.innerHTML = fullMessage;
                 modalButtons.innerHTML = `<button id="modal-ok-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none">確定</button>`;
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -566,7 +573,7 @@
                             }
                         } catch (error) {
                             console.error("Error during manager action:", error);
-                            showAlert('操作失敗，請稍後再試。', '錯誤');
+                            showAlert('操作失敗，請稍後再試。', '錯誤', error);
                         }
                     }
                 });
@@ -789,7 +796,7 @@
                     resetForm();
                 } catch (error) {
                     console.error("Error deleting document:", error);
-                    showAlert('刪除失敗，請稍後再試。', '錯誤');
+                    showAlert('刪除失敗，請稍後再試。', '錯誤', error);
                 }
             }
             
@@ -822,7 +829,7 @@
                     if(state.activeTab === 'stats' && state.isLoggedIn) { renderStatistics(); }
                 }, (error) => {
                     console.error("Error listening for requests:", error);
-                    showAlert('無法讀取資料庫，請檢查網路連線或重新整理頁面。', '錯誤');
+                    showAlert('無法讀取資料庫，請檢查網路連線或重新整理頁面。', '錯誤', error);
                 });
             }
 
@@ -837,9 +844,10 @@
             async function initFirebase() {
                 try {
                     // Use environment variables for configuration
-                    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                    const rawConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                    const firebaseConfig = Object.keys(rawConfig).length === 0 ? null : rawConfig;
                     
-                    if (!firebaseConfig.apiKey) {
+                    if (!firebaseConfig || !firebaseConfig.apiKey) {
                         showAlert('Firebase 設定不正確，因此無法連接到雲端資料庫。', '資料庫連線失敗');
                         console.error("Firebase config is missing or invalid.");
                         submitBtn.disabled = true; submitBtn.textContent = '資料庫未連接'; submitBtn.classList.add('cursor-not-allowed', 'bg-gray-400', 'hover:bg-gray-400'); submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -874,7 +882,7 @@
 
                 } catch (error) {
                     console.error("Firebase Initialization Error:", error);
-                    showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤');
+                    showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤', error);
                 }
             }
 
@@ -941,6 +949,7 @@
                             where("requestId", ">=", `${datePrefix}-`),
                             where("requestId", "<", `${datePrefix}-~`)
                         );
+                        // NOTE: Firestore queries often require indexes. We assume one is pre-configured for requestId filtering.
                         const querySnapshot = await getDocs(q);
                         const newSeq = String(querySnapshot.size + 1).padStart(3, '0');
                         const newRequestId = `${datePrefix}-${newSeq}`;
@@ -982,7 +991,7 @@
                     }
                 } catch(error) {
                     console.error("Form submission error: ", error);
-                    showAlert('提交失敗，請檢查您的網路連線或資料庫權限設定。', '錯誤');
+                    showAlert('提交失敗，請檢查您的網路連線或資料庫權限設定。', '錯誤', error);
                     submitBtn.disabled = false;
                     submitBtn.textContent = state.editingRequestId ? '更新處理進度' : '提交新申請';
                 }
