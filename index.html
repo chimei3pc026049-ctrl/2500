@@ -55,14 +55,6 @@
         .animate-pulse-badge {
           animation: pulse-badge 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-        
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin {
-          animation: spin 1s linear infinite;
-        }
 
         .tab-btn {
             padding: 0.75rem 1rem;
@@ -84,7 +76,7 @@
         <!-- Header -->
         <header class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-4">
-                <img src="https://placehold.co/64x64/2563eb/ffffff?text=CCHL" alt="奇美醫院 Logo" class="h-12 sm:h-16">
+                <img src="chi_mei_hospital_Chiali_blue.png" alt="奇美醫院 Logo" class="h-12 sm:h-16">
                 <h1 class="text-xl sm:text-3xl font-bold text-gray-800">派車申請系統</h1>
             </div>
         </header>
@@ -110,9 +102,9 @@
                         <div class="lg:col-span-3">
                             <label class="block text-sm font-medium text-gray-700">院區</label>
                             <div id="branch-options" class="mt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-sm sm:text-base text-gray-700">
-                                    <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
-                                    <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
-                                    <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="永康院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>永康院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="柳營院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>柳營院區</span></label>
+                                  <label class="flex items-center space-x-2"><input type="checkbox" name="branch" value="佳里院區" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>佳里院區</span></label>
                             </div>
                         </div>
                         <div><label for="reason" class="block text-sm font-medium text-gray-700">用車事由</label><input type="text" id="reason" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value=""></div>
@@ -137,7 +129,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                             <div>
                                 <label for="display_request_id" class="block text-sm font-medium text-gray-700">申請單號</label>
-                                <input type="text" id="display_request_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input" disabled>
+                                <input type="text" id="display_request_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
                             </div>
                             <div>
                                 <label for="dispatch_status" class="block text-sm font-medium text-gray-700">處理狀況</label>
@@ -152,23 +144,23 @@
                             </div>
                             <div>
                                 <label for="approving_manager" class="block text-sm font-medium text-gray-700">簽核主管</label>
-                                <input type="text" id="approving_manager" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input" disabled>
+                                <input type="text" id="approving_manager" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
                             </div>
                             <div>
                                 <label for="dispatch_method" class="block text-sm font-medium text-gray-700">派車方式</label>
-                                <input type="text" id="dispatch_method" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input" disabled>
+                                <input type="text" id="dispatch_method" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
                             </div>
                              <div>
                                 <label for="driver_name" class="block text-sm font-medium text-gray-700">司機姓名</label>
-                                <input type="text" id="driver_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input" disabled>
+                                <input type="text" id="driver_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
                             </div>
                              <div>
                                 <label for="driver_phone" class="block text-sm font-medium text-gray-700">司機電話</label>
-                                <input type="text" id="driver_phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input" disabled>
+                                <input type="text" id="driver_phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input">
                             </div>
                             <div class="md:col-span-2">
                                 <label for="admin_remarks" class="block text-sm font-medium text-gray-700">承辦備註</label>
-                                <textarea id="admin_remarks" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input" disabled></textarea>
+                                <textarea id="admin_remarks" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled-input"></textarea>
                             </div>
                         </div>
                     </div>
@@ -200,7 +192,7 @@
                             <h2 class="text-xl font-bold text-gray-800">所有派車申請</h2>
                             <button id="refresh-admin-list-btn" title="重新整理" class="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <svg class="w-5 h-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.691V5.25a8.25 8.25 0 00-11.664 0v4.992m11.664 0l-3.181-3.183" />
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.691V5.25a8.25 8.25 0 00-11.664 0v4.992m11.664 0l-3.181-3.183" />
                                 </svg>
                             </button>
                         </div>
@@ -216,7 +208,7 @@
                  <div id="admin-login-prompt" class="text-center py-10">
                     <p class="text-gray-600">此為管理員專區，請先登入。</p>
                     <button id="admin-login-prompt-btn" class="mt-4 py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700">立即登入</button>
-                 </div>
+                </div>
             </div>
 
             <!-- Stats Tab -->
@@ -286,12 +278,6 @@
             
             let statusChartInstance, branchChartInstance, driverChartInstance;
 
-            // --- FIRESTORE CONFIGURATION (CRITICAL FIX) ---
-            // 1. Get environment variables
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            // 2. Define the public, shared collection path for all requests
-            const PUBLIC_COLLECTION_PATH = `/artifacts/${appId}/public/data/requests`;
-            
             // --- CACHE ELEMENTS ---
             const form = document.getElementById('dispatchForm');
             const logoutBtn = document.getElementById('logout-btn');
@@ -326,22 +312,14 @@
 
             // --- MODAL ELEMENTS & FUNCTIONS ---
             const modal = document.getElementById('custom-modal');
-            const modalBox = modal.querySelector('.bg-white'); // Target the inner white box for shake
             const modalTitle = document.getElementById('modal-title');
             const modalContent = document.getElementById('modal-content');
             const modalButtons = document.getElementById('modal-buttons');
 
             function hideModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
-            function showAlert(message, title = '通知', consoleError) { 
+            function showAlert(message, title = '通知') { 
                 modalTitle.textContent = title;
-                let fullMessage = `<p>${message}</p>`;
-                if (consoleError) {
-                    // Optional: Show more detail in console if an error object is passed
-                    fullMessage += `<p class="text-xs text-red-500 mt-2">請查看瀏覽器 Console 取得更多錯誤細節。</p>`;
-                    console.error("Alert Triggered with Error:", consoleError);
-                }
-
-                modalContent.innerHTML = fullMessage;
+                modalContent.innerHTML = `<p>${message}</p>`;
                 modalButtons.innerHTML = `<button id="modal-ok-btn" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none">確定</button>`;
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -405,9 +383,7 @@
                     if (usernameInput.value === 'admin' && passwordInput.value === 'cch2500') {
                         hideModal(); state.isLoggedIn = true; showAlert('登入成功！'); updateUI(); setActiveTab('admin');
                     } else {
-                        errorEl.textContent = '帳號或密碼錯誤！'; 
-                        modalBox.classList.add('animate-shake'); 
-                        setTimeout(() => { modalBox.classList.remove('animate-shake'); }, 500);
+                        errorEl.textContent = '帳號或密碼錯誤！'; const modalBox = modal.querySelector('div'); modalBox.classList.add('animate-shake'); setTimeout(() => { modalBox.classList.remove('animate-shake'); }, 500);
                     }
                 };
                 loginBtn.onclick = handleLogin;
@@ -452,8 +428,11 @@
                     const remarks = managerRemarksInput.value.trim();
                     if (!name) {
                         errorEl.textContent = '主管姓名為必填欄位。';
-                        modalBox.classList.add('animate-shake');
-                        setTimeout(() => { modalBox.classList.remove('animate-shake'); }, 500);
+                        const modalBox = modal.querySelector('div > div');
+                        if(modalBox) {
+                           modalBox.classList.add('animate-shake');
+                           setTimeout(() => { modalBox.classList.remove('animate-shake'); }, 500);
+                        }
                         return;
                     }
                     hideModal();
@@ -523,7 +502,7 @@
             }
             
             function getStatusBadgeClass(status) {
-                switch(status) {
+                 switch(status) {
                     case '待申請單位主管簽核': return 'status-manager-approval';
                     case '主管退回': return 'status-manager-rejected';
                     case '待管理單位處理': return 'status-pending';
@@ -553,8 +532,7 @@
                 if (!id || !state.db) return;
                 promptManagerAction(async (action) => {
                     if (action) { 
-                        // Use the public collection path
-                        const docRef = doc(state.db, PUBLIC_COLLECTION_PATH, id);
+                        const docRef = doc(state.db, 'requests', id);
                         try {
                             if (action.approved) {
                                 await updateDoc(docRef, { 
@@ -573,7 +551,7 @@
                             }
                         } catch (error) {
                             console.error("Error during manager action:", error);
-                            showAlert('操作失敗，請稍後再試。', '錯誤', error);
+                            showAlert('操作失敗，請稍後再試。', '錯誤');
                         }
                     }
                 });
@@ -643,7 +621,6 @@
                     
                     let managerActionsHTML = '';
                     if (req.dispatchStatus === '待申請單位主管簽核') {
-                        // Manager approval button for deep link/search view
                         managerActionsHTML = `<div class="mt-2 pt-2 border-t"><button class="w-full text-center py-2 px-4 bg-green-100 text-green-800 rounded-md hover:bg-green-200 approve-btn-search">主管簽核</button></div>`;
                     }
 
@@ -698,7 +675,7 @@
                 const statusCounts = filteredRequests.reduce((acc, req) => { acc[req.dispatchStatus] = (acc[req.dispatchStatus] || 0) + 1; return acc; }, {});
                 if(statusChartInstance) statusChartInstance.destroy();
                 statusChartInstance = new Chart(statusCtx, {
-                    type: 'pie', data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#e0e7ff', '#fef3c7', '#d1fae5', '#fee2e2', '#e5e7eb', '#FEF9C3'], borderColor: ['#3730a3', '#92400e', '#065f46', '#991b1b', '#4b5563', '#713F12'], borderWidth: 1 }] },
+                    type: 'pie', data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#e0e7ff', '#fef3c7', '#d1fae5', '#fee2e2', '#e5e7eb'], borderColor: ['#3730a3', '#92400e', '#065f46', '#991b1b', '#4b5563'], borderWidth: 1 }] },
                     options: { responsive: true, maintainAspectRatio: true }
                 });
 
@@ -788,23 +765,21 @@
 
             async function deleteRequest(id) {
                 if (!id || !state.db) return;
-                // Use the public collection path
-                const docRef = doc(state.db, PUBLIC_COLLECTION_PATH, id);
+                const docRef = doc(state.db, 'requests', id);
                 try {
                     await deleteDoc(docRef);
                     showAlert('申請單已成功刪除。');
                     resetForm();
                 } catch (error) {
                     console.error("Error deleting document:", error);
-                    showAlert('刪除失敗，請稍後再試。', '錯誤', error);
+                    showAlert('刪除失敗，請稍後再試。', '錯誤');
                 }
             }
             
             // --- FIRESTORE & INITIALIZATION ---
             function listenForRequests() {
                 if (!state.db) return;
-                // Use the public collection path
-                const requestsColRef = collection(state.db, PUBLIC_COLLECTION_PATH);
+                const requestsColRef = collection(state.db, 'requests');
                 onSnapshot(requestsColRef, (snapshot) => {
                     state.requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     state.requests.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
@@ -829,7 +804,7 @@
                     if(state.activeTab === 'stats' && state.isLoggedIn) { renderStatistics(); }
                 }, (error) => {
                     console.error("Error listening for requests:", error);
-                    showAlert('無法讀取資料庫，請檢查網路連線或重新整理頁面。', '錯誤', error);
+                    showAlert('無法讀取資料庫，請檢查網路連線或重新整理頁面。', '錯誤');
                 });
             }
 
@@ -843,11 +818,17 @@
 
             async function initFirebase() {
                 try {
-                    // Use environment variables for configuration
-                    const rawConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-                    const firebaseConfig = Object.keys(rawConfig).length === 0 ? null : rawConfig;
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyAaF0b3-C8v_uaed0XtFKfWC7ElFNrrshc",
+                        authDomain: "carforms-dc898.firebaseapp.com",
+                        projectId: "carforms-dc898",
+                        storageBucket: "carforms-dc898.appspot.com",
+                        messagingSenderId: "1098158902069",
+                        appId: "1:1098158902069:web:ad2b2144e7c64184051a7c",
+                        measurementId: "G-BEPLKT1SNJ"
+                    };
                     
-                    if (!firebaseConfig || !firebaseConfig.apiKey) {
+                    if (!firebaseConfig.apiKey) {
                         showAlert('Firebase 設定不正確，因此無法連接到雲端資料庫。', '資料庫連線失敗');
                         console.error("Firebase config is missing or invalid.");
                         submitBtn.disabled = true; submitBtn.textContent = '資料庫未連接'; submitBtn.classList.add('cursor-not-allowed', 'bg-gray-400', 'hover:bg-gray-400'); submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -865,7 +846,6 @@
                     onAuthStateChanged(state.auth, (user) => {
                         if (user) { 
                             console.log("Authenticated successfully. User UID:", user.uid); 
-                            // Listener is now called inside onAuthStateChanged to ensure auth is ready
                             listenForRequests(); 
                         } 
                         else { 
@@ -873,16 +853,11 @@
                         }
                     });
 
-                    // Use platform-provided token for auth, or sign in anonymously if not available
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        await signInWithCustomToken(state.auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(state.auth);
-                    }
+                    await signInAnonymously(state.auth); 
 
                 } catch (error) {
                     console.error("Firebase Initialization Error:", error);
-                    showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤', error);
+                    showAlert('系統初始化失敗，請重新整理頁面。', '嚴重錯誤');
                 }
             }
 
@@ -930,12 +905,10 @@
                             driverPhone: document.getElementById('driver_phone').value,
                             adminRemarks: document.getElementById('admin_remarks').value,
                         };
-                        // Use the public collection path
-                        const docRef = doc(state.db, PUBLIC_COLLECTION_PATH, state.editingRequestId);
+                        const docRef = doc(state.db, 'requests', state.editingRequestId);
                         await updateDoc(docRef, formData);
                         showAlert('申請單已更新！');
                         resetForm();
-                        setActiveTab('admin'); 
                     } else {
                         // Handle new application
                         const today = new Date();
@@ -943,13 +916,11 @@
                         const mm = String(today.getMonth() + 1).padStart(2, '0');
                         const datePrefix = `${yyyy}${mm}`;
 
-                        // Use the public collection path
-                        const requestsColRef = collection(state.db, PUBLIC_COLLECTION_PATH);
+                        const requestsColRef = collection(state.db, 'requests');
                         const q = query(requestsColRef, 
                             where("requestId", ">=", `${datePrefix}-`),
                             where("requestId", "<", `${datePrefix}-~`)
                         );
-                        // NOTE: Firestore queries often require indexes. We assume one is pre-configured for requestId filtering.
                         const querySnapshot = await getDocs(q);
                         const newSeq = String(querySnapshot.size + 1).padStart(3, '0');
                         const newRequestId = `${datePrefix}-${newSeq}`;
@@ -991,7 +962,7 @@
                     }
                 } catch(error) {
                     console.error("Form submission error: ", error);
-                    showAlert('提交失敗，請檢查您的網路連線或資料庫權限設定。', '錯誤', error);
+                    showAlert('提交失敗，請檢查您的網路連線或資料庫權限設定。', '錯誤');
                     submitBtn.disabled = false;
                     submitBtn.textContent = state.editingRequestId ? '更新處理進度' : '提交新申請';
                 }
